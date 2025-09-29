@@ -1,53 +1,53 @@
-# Übungsaufgabe: Generische `Point<T>`-Klasse mit Templates (C++20)
+# Übungsaufgabe: Generische `Point<T>`-Klasse (C++17-kompatibel)
 
-**Lernziel:** Überführen der bisherigen `Point`-Klasse in eine **generische** Template-Klasse `Point<T>` für unterschiedliche Zahlentypen (`int`, `double`, …). Einsatz von **Templates**, **Concepts** (oder `std::enable_if`), **`std::common_type_t`** und Anbindung an **fmt**.
+**Ziel:** Überführen der bisherigen `Point`-Klasse in eine **generische** Template-Klasse `Point<T>` für unterschiedliche Zahlentypen – **ohne C++20 Concepts**, vollständig **C++17-kompatibel**.  
+Schwerpunkte: Templates, `static_assert`/Type-Traits, sicherer Rückgabetyp für `distance_to`, `fmt`-Formatter, Catch2-Tests.
 
 ---
 
 ## Anforderungen
 
 1. **Klassen-Template**
-   - Definieren Sie `template <typename T> class Point`.
-   - Member: `T x; T y;`
-   - Konstruktoren:
-     - Standardkonstruktor: `x = T{}` und `y = T{}`
-     - Wertekonstruktor: `Point(T x, T y)`
+   - `template <typename T> class Point` mit Membern `T x; T y;`
+   - Standardkonstruktor: `x = T{}`, `y = T{}`
+   - Wertekonstruktor: `Point(T x, T y)`
    - Methode: `void move(T dx, T dy)`
 
-2. **Typ-Einschränkung**
-   - Beschränken Sie `T` auf **arithmetische Typen**.
-   - **Variante A (C++20 Concepts):**
+2. **Typ-Constraint (ohne Concepts)**
+   - Beschränken Sie `T` auf arithmetische Typen über Type-Traits:
      ```cpp
-     #include <concepts>
-     template <std::arithmetic T>
-     class Point { /* ... */ };
+     #include <type_traits>
+     static_assert(std::is_arithmetic<T>::value, "Point<T>: T must be arithmetic");
      ```
-   - **Variante B (ohne Concepts):**
-     ```cpp
-     static_assert(std::is_arithmetic_v<T>, "Point<T>: T must be arithmetic");
-     ```
+     > Hinweis: In C++17 ist `std::is_arithmetic_v<T>` via `<type_traits>` verfügbar. Sie können wahlweise `_v` verwenden.
 
 3. **Distance-Funktion**
-   - Signatur (als `const` Memberfunktion):
+   - Signatur:
      ```cpp
      auto distance_to(const Point& other) const -> /* geeigneter Typ */;
      ```
-   - Rückgabetyp per **`std::common_type_t<T, double>`** oder direkt `double`, damit Ergebnisse bei `int` nicht abgeschnitten werden.
-   - Nutzen Sie `std::hypot` für numerisch stabile Distanzberechnung.
-   - **Hinweis:** Achten Sie auf Casts (`static_cast`) vor dem Quadrieren.
-
-4. **Vergleichsoperatoren**
-   - Implementieren Sie `operator==` und `operator!=` für exakte Vergleiche.
-   - (Optional) Für `floating point` zusätzlich eine **annähernde** Vergleichsfunktion:
+   - Nutzen Sie als Rückgabetyp **`std::common_type_t<T, double>`** (oder `double`).  
+   - Implementierung mit `std::hypot` (C++17 vorhanden). Vor dem Rechnen in den breiteren Typ casten:
      ```cpp
-     template <typename T>
-     bool almost_equal(T a, T b, T eps);
+     using dist_t = std::common_type_t<T, double>;
+     auto dx = static_cast<dist_t>(x) - static_cast<dist_t>(other.x);
+     auto dy = static_cast<dist_t>(y) - static_cast<dist_t>(other.y);
+     return std::hypot(dx, dy);
      ```
 
-5. **fmt-Anbindung**
-   - Schreiben Sie eine `fmt`-Formatter-Spezialisierung für `Point<T>`, damit `fmt::print("{}", p)` `"(x, y)"` ausgibt.
-   - Gerüst (nicht vollständig):
+4. **Vergleichsoperatoren**
+   - Implementieren Sie `operator==` und `operator!=` **explizit** (kein `= default` erforderlich, aber erlaubt):
      ```cpp
+     bool operator==(const Point& rhs) const { return x == rhs.x && y == rhs.y; }
+     bool operator!=(const Point& rhs) const { return !(*this == rhs); }
+     ```
+
+5. **fmt-Integration (C++17)**
+   - Spezialisieren Sie einen Formatter für `Point<T>`, damit `fmt::print("{}", p)` die Form `"(x, y)"` ausgibt.
+   - Beispielgerüst:
+     ```cpp
+     #include <fmt/core.h>
+
      template <typename T>
      struct fmt::formatter<Point<T>> : fmt::formatter<std::string_view> {
        template <typename FormatContext>
@@ -56,52 +56,27 @@
        }
      };
      ```
+     > Achten Sie auf die Header-Reihenfolge: Der Formatter muss nach der Point-Deklaration sichtbar sein.
 
-6. **Operatoren (optional, aber empfohlen)**
+6. **(Optional) Operatoren**
    - `Point<T> operator+(const Point<T>& rhs) const;`
    - `Point<T> operator-(const Point<T>& rhs) const;`
-   - Skalar-Multiplikation: `Point<common_type_t<T,U>> operator*(U s) const;`
+   - Skalar-Multiplikation: `template <typename U> Point<std::common_type_t<T,U>> operator*(U s) const;`
 
 ---
 
-## Tests (mit Catch2)
-
-Erstellen Sie eine neue Testdatei `tests/test_point_template.cpp`. Orientieren Sie sich an Ihrer bestehenden Test-Struktur und ergänzen Sie folgende Fälle:
-
-1. **Instanziierung mit verschiedenen Typen**
-   - `Point<int> pi{2, 3};`
-   - `Point<double> pd{2.5, -3.75};`
-   - Prüfen Sie Konstruktoren, `move`, `operator==/!=`.
-
-2. **`distance_to` – Ganzzahl vs. Gleitkomma**
-   - `Point<int> a{0,0}, b{3,4};` → `distance == 5.0` (mit `Approx`)
-   - `Point<double> c{0.5, 0.5}, d{2.5, 4.5};` → Erwartungswert berechnen und mit `Approx` prüfen.
-   - **Rückgabetyp**: verifizieren Sie, dass `decltype(a.distance_to(b))` **nicht** `int` ist (z. B. `std::is_same_v` in einem `STATIC_REQUIRE`).
-
-3. **Operatoren (falls implementiert)**
-   - `(pi + Point<int>{1,1}) == Point<int>{3,4}`
-   - `(pd * 2) == Point<double>{5.0, -7.5}` (Toleranztest mit `Approx`)
-
-4. **fmt-Formatter**
-   - `fmt::format("{}", Point<int>{1,2}) == "(1, 2)"`
-   - Ausgabe in Tests nicht nötig, aber ein Format-Check erhöht die Abdeckung.
-
-5. **Edge Cases**
-   - Große Werte (potenzielle Überläufe bei `int` → stellen Sie sicher, dass in `distance_to` in breiteren Typ gecastet wird).
-   - Negative Koordinaten.
-   - `distance_to` von einem Punkt zu sich selbst ist `0`.
-
----
-
-## Beispiel-Schnipsel (unvollständig, zur Orientierung)
+## Beispiel-Skelett (unvollständig, zur Orientierung)
 
 ```cpp
+// point.hpp
+#pragma once
 #include <type_traits>
 #include <cmath>
-#include <concepts>
+#include <utility> // std::move (falls benötigt)
 
-template <std::arithmetic T>
+template <typename T>
 class Point {
+  static_assert(std::is_arithmetic<T>::value, "Point<T>: T must be arithmetic");
 public:
   T x{};
   T y{};
@@ -109,28 +84,87 @@ public:
   Point() = default;
   Point(T x_, T y_) : x{x_}, y{y_} {}
 
-  void move(T dx, T dy) {
-    x += dx; y += dy;
-  }
+  void move(T dx, T dy) { x += dx; y += dy; }
 
   using dist_t = std::common_type_t<T, double>;
-
   auto distance_to(const Point& other) const -> dist_t {
-    auto dx = static_cast<dist_t>(x) - static_cast<dist_t>(other.x);
-    auto dy = static_cast<dist_t>(y) - static_cast<dist_t>(other.y);
+    const auto dx = static_cast<dist_t>(x) - static_cast<dist_t>(other.x);
+    const auto dy = static_cast<dist_t>(y) - static_cast<dist_t>(other.y);
     return std::hypot(dx, dy);
   }
 
-  bool operator==(const Point&) const = default;
+  bool operator==(const Point& rhs) const { return x == rhs.x && y == rhs.y; }
+  bool operator!=(const Point& rhs) const { return !(*this == rhs); }
 };
 ```
 
-> **Achtung:** Oben ist bewusst **nicht** alles enthalten (z. B. fmt-Formatter, zusätzliche Operatoren), damit Sie die Aufgabe selbstständig ausarbeiten.
+```cpp
+// point_fmt.hpp (oder unter point.hpp, nach der Klasse)
+#pragma once
+#include <fmt/core.h>
+template <typename T>
+struct fmt::formatter<Point<T>> : fmt::formatter<std::string_view> {
+  template <typename FormatContext>
+  auto format(const Point<T>& p, FormatContext& ctx) const {
+    return fmt::format_to(ctx.out(), "({}, {})", p.x, p.y);
+  }
+};
+```
+
+---
+
+## Tests (Catch2, C++17)
+
+Erstellen Sie `tests/test_point_template_cpp17.cpp` (Pfade/Includes an Ihr Template anpassen).  
+Verwenden Sie `Approx` für Gleitkomma-Vergleiche.
+
+```cpp
+#include <catch2/catch_test_macros.hpp>
+#include "point.hpp"
+#include <type_traits>
+#include <fmt/core.h>
+#include "point_fmt.hpp" // falls der Formatter separat ist
+
+TEST_CASE("Point<T>: Konstruktion & move (int)") {
+  Point<int> p{2, 3};
+  REQUIRE(p.x == 2);
+  REQUIRE(p.y == 3);
+
+  p.move(1, -4);
+  REQUIRE(p.x == 3);
+  REQUIRE(p.y == -1);
+}
+
+TEST_CASE("Point<T>: Konstruktion & move (double)") {
+  Point<double> p{2.5, -3.75};
+  p.move(0.5, 0.25);
+  REQUIRE(p.x == Approx(3.0));
+  REQUIRE(p.y == Approx(-3.5));
+}
+
+TEST_CASE("Point<T>: distance_to – Typ & Wert") {
+  Point<int> a{0,0}, b{3,4};
+  typedef decltype(a.distance_to(b)) dist_t;
+  STATIC_REQUIRE(!std::is_same<dist_t, int>::value);
+  REQUIRE(a.distance_to(b) == Approx(5.0).margin(1e-12));
+  REQUIRE(b.distance_to(a) == Approx(5.0).margin(1e-12));
+  REQUIRE(a.distance_to(a) == Approx(0.0).margin(1e-12));
+}
+
+TEST_CASE("Point<T>: fmt-Formatter") {
+  Point<int> pi{1,2};
+  REQUIRE(fmt::format("{}", pi) == "(1, 2)");
+}
+```
+
+**Edge Cases:**  
+- Sehr große/negative Werte (Achtung bei Differenzen: Cast auf `dist_t` wie gezeigt).  
+- Viele aufeinanderfolgende `move`-Aufrufe (Stabilität).  
+- Typmischung in optionalen Operatoren (z. B. `Point<int>{} * 2.5`).
 
 
-## Erweiterungen (freiwillig)
+## Hinweise
 
-- **`Point` als `constexpr` nutzbar** (wo sinnvoll)  
-- `std::hash<Point<T>>` für den Einsatz in `std::unordered_set/map`  
-- Konvertierender Konstruktor `template <typename U> Point(const Point<U>&)` mit `std::is_convertible_v<U,T>`  
-- Interoperable Operatoren zwischen `Point<T>` und `Point<U>` mit `std::common_type_t<T,U>`
+- `std::hypot` ist in C++17 verfügbar und robust für die euklidische Norm.  
+- `STATIC_REQUIRE` ist ein Catch2-Makro (Compile-Time-Check). Alternativ: `REQUIRE(std::is_same<...>::value)` (Laufzeit).  
+- Achten Sie darauf, dass der Formatter **nach** der Klassendefinition sichtbar ist (oder in separater Headerdatei, die nach `point.hpp` inkludiert wird).

@@ -1,3 +1,3 @@
-Basics der Objektorientierung
+# Basics der Objektorientierung
 
-- Klassen, abgeleitete Klassen 
+- Klassen, abgeleitete Klassen
