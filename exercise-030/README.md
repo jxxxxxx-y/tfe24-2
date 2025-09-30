@@ -1,15 +1,15 @@
 # Übung: Strategy Pattern – Logger mit JSON- und fmt-Ausgabe
 
 ## Lernziele
+
 - **Strategy Pattern** verstehen und anwenden (Austausch von Algorithmen zur Laufzeit).
 - **Interface-basierte Programmierung** und **Dependency Injection** nutzen.
 - Saubere **Trennung von Anliegen** (Kontext vs. konkrete Strategie).
 
-> Annahmen: *nlohmann::json* und *fmt* stehen im Projekt bereit.
-
 ---
 
 ## Anforderungen (Kurz)
+
 - `ILogger` Interface mit `log(level, message, ctx)`
 - Strategien: `JsonLogger` (NDJSON in Datei) und `FmtConsoleLogger` (fmt auf STDOUT)
 - `Logger`-Kontext mit `info/warn/error` und `set_strategy(...)`
@@ -63,6 +63,7 @@ classDiagram
 ## Skeleton (unverändert verwendbar)
 
 ### `ilogger.hpp`
+
 ```cpp
 #pragma once
 #include <string>
@@ -79,6 +80,7 @@ struct ILogger {
 ```
 
 ### `json_logger.hpp` / `json_logger.cpp`
+
 ```cpp
 // json_logger.hpp
 #pragma once
@@ -93,8 +95,6 @@ public:
     void log(const std::string& level,
              const std::string& message,
              const Context& context = {}) override;
-private:
-    std::ofstream out_;
 };
 ```
 
@@ -108,20 +108,6 @@ private:
 
 using json = nlohmann::json;
 
-static std::string iso8601_now_utc() {
-    using namespace std::chrono;
-    auto now = system_clock::now();
-    std::time_t t = system_clock::to_time_t(now);
-    std::tm tm{};
-#ifdef _WIN32
-    gmtime_s(&tm, &t);
-#else
-    gmtime_r(&t, &t);
-#endif
-    std::ostringstream oss;
-    oss << std::put_time(&tm, "%FT%TZ");
-    return oss.str();
-}
 
 JsonLogger::JsonLogger(std::string path) : out_(std::move(path), std::ios::app) {}
 JsonLogger::~JsonLogger() = default;
@@ -129,18 +115,12 @@ JsonLogger::~JsonLogger() = default;
 void JsonLogger::log(const std::string& level,
                      const std::string& message,
                      const Context& context) {
-    json j{
-        {"timestamp", iso8601_now_utc()},
-        {"level", level},
-        {"message", message}
-    };
-    if (!context.empty()) j["context"] = context;
-    out_ << j.dump() << '\n';
-    out_.flush();
+    //....
 }
 ```
 
 ### `fmt_console_logger.hpp` / `fmt_console_logger.cpp`
+
 ```cpp
 // fmt_console_logger.hpp
 #pragma once
@@ -162,36 +142,16 @@ public:
 #include <iomanip>
 #include <sstream>
 
-static std::string iso8601_now_local() {
-    using namespace std::chrono;
-    auto now = system_clock::now();
-    std::time_t t = system_clock::to_time_t(now);
-    std::tm tm{};
-#ifdef _WIN32
-    localtime_s(&tm, &t);
-#else
-    localtime_r(&t, &tm);
-#endif
-    std::ostringstream oss;
-    oss << std::put_time(&tm, "%FT%T");
-    return oss.str();
-}
 
 void FmtConsoleLogger::log(const std::string& level,
                            const std::string& message,
                            const Context& context) {
-    std::string ctx_str;
-    for (const auto& kv : context) {
-        if (!ctx_str.empty()) ctx_str += ' ';
-        ctx_str += kv.first + '=' + kv.second;
-    }
-    if (!ctx_str.empty()) ctx_str = " " + ctx_str;
-
-    fmt::print("[{}] ({}){} :: {}\n", iso8601_now_local(), level, ctx_str, message);
+    // ...
 }
 ```
 
 ### `logger.hpp`
+
 ```cpp
 #pragma once
 #include "ilogger.hpp"
@@ -219,3 +179,21 @@ private:
 
 ---
 
+## Abnahmekriterien
+
+- Austausch der Log-Strategie **zur Laufzeit** ohne Codeänderung im Anwendungskern (`Logger` nutzt nur `ILogger`).
+- Korrekte Ausgabeformate (JSON pro Zeile; fmt-Ausgabe auf STDOUT).
+- Ressourcen- und Ausnahme-sicherer Datei-Umgang im `JsonLogger`.
+- Sinnvolle Timestamps & Levels.
+- Kleine **README.md** mit Build-Hinweisen, `app.log.jsonl` als Beispielausgabe.
+
+---
+
+## Bonus-Ideen
+
+- **Konfiguration via JSON** (z. B. `{"logger":"json","path":"app.log.jsonl"}`) statt festem Wechsel in `main`.
+- **Asynchrones Logging**: Queue + Worker-Thread (Achtung: Thread-Sicherheit, Flush).
+- **Rotating File Logger** (Max-Größe in MB, Keep-Count).
+- **Context-Adapter**: automatische Felder (Hostname, PID, Thread-ID).
+
+Viel Spaß beim Strategien‑Tauschen! 🧩
