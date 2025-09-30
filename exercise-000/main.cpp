@@ -35,6 +35,7 @@ auto main(int argc, char **argv) -> int
     fmt::println("The value pD is pointing to: {}, the address of pD:{}",*pD, fmt::ptr(pD));
     fmt::println("The value of x: {},             the address of x:{}",bar, fmt::ptr(&bar));
 
+    
     *pD = 47.11;
     fmt::println("The value pD is pointing to: {}, the address of pD:{}",*pD, fmt::ptr(pD));
     fmt::println("The value of x: {},             the address of x:{}",bar, fmt::ptr(&bar));
