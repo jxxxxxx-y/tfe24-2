@@ -1,89 +1,56 @@
 # Übung: Strategy Pattern – Logger mit JSON- und fmt-Ausgabe
 
 ## Lernziele
-
 - **Strategy Pattern** verstehen und anwenden (Austausch von Algorithmen zur Laufzeit).
 - **Interface-basierte Programmierung** und **Dependency Injection** nutzen.
 - Saubere **Trennung von Anliegen** (Kontext vs. konkrete Strategie).
-- Optional: Konfiguration über **JSON** und Logging-Formatierung mit **fmt**.
 
-> Annahmen: *nlohmann::json* und *fmt* stehen im Projekt bereit (oder alternativ mit kleinen Anpassungen ersetzbar).
-
----
-
-## Aufgabenbeschreibung
-
-Implementieren Sie einen Logger, der zur Laufzeit zwischen zwei Strategien wechseln kann:
-
-1. `JsonLogger` – schreibt strukturierte Einträge als **JSON-Zeilen** (line-delimited JSON) in eine Datei.
-2. `FmtConsoleLogger` – schreibt formattierte **Kommandozeilen-Ausgabe** mittels *fmt*.
-
-Die Auswahl der Strategie erfolgt **nicht** per `if/else` im Anwendungscode, sondern über das **Strategy Pattern**: der Anwendungskontext kennt nur das `ILogger`-Interface. Die konkrete Strategie wird via **Konstruktor-Injektion** (oder Setter) bereitgestellt und kann zur Laufzeit gewechselt werden.
+> Annahmen: *nlohmann::json* und *fmt* stehen im Projekt bereit.
 
 ---
 
-## Anforderungen
-
-### Fachliche Anforderungen
-
-- Jeder Logeintrag enthält mindestens:
-  - `timestamp` (ISO-8601, z. B. `2025-09-30T12:34:56Z`),
-  - `level` (z. B. `"info" | "warn" | "error"`),
-  - `message` (Freitext),
-  - optional `context` (Key-Value-Objekt, z. B. `{ "module": "auth", "user": "alice" }`).
-
-- **JsonLogger**
-  - schreibt **eine JSON-Zeile pro Eintrag** (LDJSON/NDJSON) in eine angegebene Datei.
-  - Datei wird im Konstruktor geöffnet; im Destruktor geschlossen.
-  - Robust gegen fehlende Felder (setzt sinnvolle Defaults).
-
-- **FmtConsoleLogger**
-  - verwendet *fmt* für formattierte Ausgabe, z. B.:
-
-    ```text
-    [2025-09-30T12:34:56Z] (INFO) user=alice module=auth :: login ok
-    ```
-
-  - `context` wird als `key=value` Paare angehängt.
-
-### Technische Anforderungen
-
-- `ILogger` Interface definiert die **einheitliche** API.
-- `Logger`-Kontext kapselt die Strategie und bietet komfortable Methoden (`info`, `warn`, `error`).
-- **Keine** `if (json) ... else (fmt) ...`-Verzweigung im Kontext: nur Polymorphie!
-- Exception-sicherer Umgang mit Dateiressourcen.
-- Zeitzone: UTC oder lokal – aber konsistent (Dokumentation in README).
+## Anforderungen (Kurz)
+- `ILogger` Interface mit `log(level, message, ctx)`
+- Strategien: `JsonLogger` (NDJSON in Datei) und `FmtConsoleLogger` (fmt auf STDOUT)
+- `Logger`-Kontext mit `info/warn/error` und `set_strategy(...)`
 
 ---
 
-## UML (Mermaid)
+## UML (Mermaid, GitHub-kompatibel)
+
+> Hinweis: GitHub-Mermaid unterstützt keine C++-Templates oder Default-Parameter in Signaturen.
+> Deshalb werden Typen vereinfacht dargestellt. Verwenden Sie für `Context` z. B. `std::map<std::string,std::string>`.
 
 ```mermaid
 classDiagram
+    class Context {
+        <<data>>
+        %% Schlüssel-Werte-Paare (z.B. module=auth, user=alice)
+    }
+
     class ILogger {
         <<interface>>
-        + log(string level, string message, map<string,string> context) void
+        +log(level: string, message: string, ctx: Context) void
     }
 
     class JsonLogger {
-        - ofstream out_
-        - string path_
-        + JsonLogger(string path)
-        + log(string level, string message, map<string,string> context) void
+        -path: string
+        -out: ofstream
+        +JsonLogger(path: string)
+        +log(level: string, message: string, ctx: Context) void
     }
 
     class FmtConsoleLogger {
-        + FmtConsoleLogger()
-        + log(string level, string message, map<string,string> context) void
+        +log(level: string, message: string, ctx: Context) void
     }
 
     class Logger {
-        - unique_ptr<ILogger> strategy_
-        + Logger(unique_ptr<ILogger>)
-        + set_strategy(unique_ptr<ILogger>) void
-        + info(string msg, map<string,string> ctx = {} ) void
-        + warn(string msg, map<string,string> ctx = {} ) void
-        + error(string msg, map<string,string> ctx = {} ) void
+        -strategy: ILogger*
+        +Logger(strategy: ILogger*)
+        +set_strategy(strategy: ILogger*) void
+        +info(message: string, ctx: Context) void
+        +warn(message: string, ctx: Context) void
+        +error(message: string, ctx: Context) void
     }
 
     ILogger <|.. JsonLogger
@@ -93,25 +60,25 @@ classDiagram
 
 ---
 
-## Starter-Skeleton
+## Skeleton (unverändert verwendbar)
 
 ### `ilogger.hpp`
-
 ```cpp
 #pragma once
 #include <string>
 #include <map>
 
+using Context = std::map<std::string, std::string>;
+
 struct ILogger {
     virtual ~ILogger() = default;
     virtual void log(const std::string& level,
                      const std::string& message,
-                     const std::map<std::string, std::string>& context = {}) = 0;
+                     const Context& context = {}) = 0;
 };
 ```
 
 ### `json_logger.hpp` / `json_logger.cpp`
-
 ```cpp
 // json_logger.hpp
 #pragma once
@@ -125,7 +92,7 @@ public:
     ~JsonLogger() override;
     void log(const std::string& level,
              const std::string& message,
-             const std::map<std::string, std::string>& context = {}) override;
+             const Context& context = {}) override;
 private:
     std::ofstream out_;
 };
@@ -149,7 +116,7 @@ static std::string iso8601_now_utc() {
 #ifdef _WIN32
     gmtime_s(&tm, &t);
 #else
-    gmtime_r(&t, &tm);
+    gmtime_r(&t, &t);
 #endif
     std::ostringstream oss;
     oss << std::put_time(&tm, "%FT%TZ");
@@ -157,16 +124,16 @@ static std::string iso8601_now_utc() {
 }
 
 JsonLogger::JsonLogger(std::string path) : out_(std::move(path), std::ios::app) {}
-
 JsonLogger::~JsonLogger() = default;
 
 void JsonLogger::log(const std::string& level,
                      const std::string& message,
-                     const std::map<std::string, std::string>& context) {
-    json j;
-    j["timestamp"] = iso8601_now_utc();
-    j["level"] = level;
-    j["message"] = message;
+                     const Context& context) {
+    json j{
+        {"timestamp", iso8601_now_utc()},
+        {"level", level},
+        {"message", message}
+    };
     if (!context.empty()) j["context"] = context;
     out_ << j.dump() << '\n';
     out_.flush();
@@ -174,7 +141,6 @@ void JsonLogger::log(const std::string& level,
 ```
 
 ### `fmt_console_logger.hpp` / `fmt_console_logger.cpp`
-
 ```cpp
 // fmt_console_logger.hpp
 #pragma once
@@ -184,7 +150,7 @@ class FmtConsoleLogger : public ILogger {
 public:
     void log(const std::string& level,
              const std::string& message,
-             const std::map<std::string, std::string>& context = {}) override;
+             const Context& context = {}) override;
 };
 ```
 
@@ -213,11 +179,11 @@ static std::string iso8601_now_local() {
 
 void FmtConsoleLogger::log(const std::string& level,
                            const std::string& message,
-                           const std::map<std::string, std::string>& context) {
+                           const Context& context) {
     std::string ctx_str;
-    for (const auto& [k, v] : context) {
+    for (const auto& kv : context) {
         if (!ctx_str.empty()) ctx_str += ' ';
-        ctx_str += k + '=' + v;
+        ctx_str += kv.first + '=' + kv.second;
     }
     if (!ctx_str.empty()) ctx_str = " " + ctx_str;
 
@@ -226,7 +192,6 @@ void FmtConsoleLogger::log(const std::string& level,
 ```
 
 ### `logger.hpp`
-
 ```cpp
 #pragma once
 #include "ilogger.hpp"
@@ -238,13 +203,13 @@ public:
     explicit Logger(std::unique_ptr<ILogger> strat) : strategy_(std::move(strat)) {}
     void set_strategy(std::unique_ptr<ILogger> strat) { strategy_ = std::move(strat); }
 
-    void info(const std::string& msg, const std::map<std::string, std::string>& ctx = {}) {
+    void info(const std::string& msg, const Context& ctx = {}) {
         if (strategy_) strategy_->log("info", msg, ctx);
     }
-    void warn(const std::string& msg, const std::map<std::string, std::string>& ctx = {}) {
+    void warn(const std::string& msg, const Context& ctx = {}) {
         if (strategy_) strategy_->log("warn", msg, ctx);
     }
-    void error(const std::string& msg, const std::map<std::string, std::string>& ctx = {}) {
+    void error(const std::string& msg, const Context& ctx = {}) {
         if (strategy_) strategy_->log("error", msg, ctx);
     }
 private:
@@ -252,68 +217,5 @@ private:
 };
 ```
 
-### `main.cpp` (Demo)
-
-```cpp
-#include "logger.hpp"
-#include "json_logger.hpp"
-#include "fmt_console_logger.hpp"
-#include <memory>
-
-int main() {
-    Logger log{std::make_unique<FmtConsoleLogger>()};
-    log.info("Application started", {{"module","core"}});
-    log.warn("Low battery", {{"soc","12%"}});
-
-    log.set_strategy(std::make_unique<JsonLogger>("app.log.jsonl"));
-    log.info("Switch to JSON logger", {{"module","core"}});
-    log.error("Fatal error", {{"code","E42"}, {"action","shutdown"}});
-    return 0;
-}
-```
-
 ---
 
-## CMake (Beispiel)
-
-```cmake
-cmake_minimum_required(VERSION 3.16)
-project(strategy_logger CXX)
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-add_executable(app
-    src/main.cpp
-    src/logger.hpp
-    src/ilogger.hpp
-    src/json_logger.hpp src/json_logger.cpp
-    src/fmt_console_logger.hpp src/fmt_console_logger.cpp
-)
-
-# Include-Pfade (passen Sie an Ihr Layout an)
-target_include_directories(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-
-# Abhängig von Ihrer Umgebung:
-# target_link_libraries(app PRIVATE fmt::fmt)  # wenn fmt als Package verfügbar
-# Bei nlohmann::json als Header-only reicht der Include-Pfad.
-```
-
----
-
-## Abnahmekriterien
-
-- Austausch der Log-Strategie **zur Laufzeit** ohne Codeänderung im Anwendungskern (`Logger` nutzt nur `ILogger`).
-- Korrekte Ausgabeformate (JSON pro Zeile; fmt-Ausgabe auf STDOUT).
-- Ressourcen- und Ausnahme-sicherer Datei-Umgang im `JsonLogger`.
-- Sinnvolle Timestamps & Levels.
-
----
-
-## Bonus-Ideen
-
-- **Konfiguration via JSON** (z. B. `{"logger":"json","path":"app.log.jsonl"}`) statt festem Wechsel in `main`.
-- **Asynchrones Logging**: Queue + Worker-Thread (Achtung: Thread-Sicherheit, Flush).
-- **Rotating File Logger** (Max-Größe in MB, Keep-Count).
-- **Context-Adapter**: automatische Felder (Hostname, PID, Thread-ID).
-
-Viel Spaß beim Strategien‑Tauschen! 🧩
