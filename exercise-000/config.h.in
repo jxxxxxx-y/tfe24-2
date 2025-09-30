@@ -6,7 +6,7 @@ namespace tfe24 {
     constexpr auto PROJECT_VER  {"@PROJECT_VERSION@"};
     constexpr auto PROJECT_VER_MAJOR {"@PROJECT_VERSION_MAJOR@"};
     constexpr auto PROJECT_VER_MINOR {"@PROJECT_VERSION_MINOR@"};
-    constexpr auto PTOJECT_VER_PATCH {"@PROJECT_VERSION_PATCH@"};
+    constexpr auto PROJECT_VER_PATCH {"@PROJECT_VERSION_PATCH@"};
     constexpr auto PROJECT_BUILD_DATE {"@BUILD_DATE@"};
 }
 #endif // CONFIG_H_IN
