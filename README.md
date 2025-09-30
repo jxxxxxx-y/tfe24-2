@@ -34,7 +34,7 @@ Damit Sie sie die Aufgaben später abgeben können fügen Sie mich bitte zu Ihre
 
 ## Übungsaufgaben
 
-- [Übungsaufgabe Nr. 1](exercise-001/README.md)
+- [Übungsaufgabe Nr. 1](exercise-000/README.md)
 
 ## Abgabe der Übungsaufgaben
 
