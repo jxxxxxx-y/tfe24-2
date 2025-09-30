@@ -13,7 +13,33 @@ auto main(int argc, char **argv) -> int
      */
     fmt::print("Hello, {}!\n", tfe24::PROJECT_NAME);
 
-    /* INSERT YOUR CODE HERE */
+    int x = 10;
+    int *p = &x;
+    
+    fmt::println("The value of x: {},             the address of x:{}",x, fmt::ptr(&x));
+    fmt::println("The value p is pointing to: {}, the address of p:{}",*p, fmt::ptr(p));
 
+    // change the vale of the variable p is pointing at
+    *p = 42;
+    fmt::println("The value p is pointing to: {}, the address of p:{}",*p, fmt::ptr(p));
+    fmt::println("The value of x: {},             the address of x:{}",x, fmt::ptr(&x));
+
+    // Let's double the fun
+    double bar = 100.001;
+    double* pD = &bar;
+
+    fmt::println("The value pD is pointing to: {}, the address of pD:{}",*pD, fmt::ptr(pD));
+    fmt::println("The value of x: {},             the address of x:{}",bar, fmt::ptr(&bar));
+
+    pD = new double(3.1415);
+    fmt::println("The value pD is pointing to: {}, the address of pD:{}",*pD, fmt::ptr(pD));
+    fmt::println("The value of x: {},             the address of x:{}",bar, fmt::ptr(&bar));
+
+    *pD = 47.11;
+    fmt::println("The value pD is pointing to: {}, the address of pD:{}",*pD, fmt::ptr(pD));
+    fmt::println("The value of x: {},             the address of x:{}",bar, fmt::ptr(&bar));
+
+
+    delete pD;
     return 0; /* exit gracefully*/
 }
