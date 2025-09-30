@@ -3,6 +3,14 @@
 
 #include "config.h"
 
+void changeValueByParameter(int value) {
+    value = 42;
+}
+
+void changeValueByPointer(double* ptr) {
+    *ptr = 42;
+}
+
 auto main(int argc, char **argv) -> int
 {
 
@@ -35,11 +43,21 @@ auto main(int argc, char **argv) -> int
     fmt::println("The value pD is pointing to: {}, the address of pD:{}",*pD, fmt::ptr(pD));
     fmt::println("The value of x: {},             the address of x:{}",bar, fmt::ptr(&bar));
 
-    
+
     *pD = 47.11;
     fmt::println("The value pD is pointing to: {}, the address of pD:{}",*pD, fmt::ptr(pD));
     fmt::println("The value of x: {},             the address of x:{}",bar, fmt::ptr(&bar));
 
+    fmt::println("The value of bar is {}, the address of bar:{}",bar, fmt::ptr(&bar));
+    changeValueByParameter(bar);
+    fmt::println("After the call to changeValueByParameter");
+    fmt::println("The value of bar is {}, the address of bar:{}",bar, fmt::ptr(&bar));
+
+    fmt::println("The value pD is pointing to: {}, the address of pD:{}",*pD, fmt::ptr(pD));
+    changeValueByPointer(pD);
+    fmt::println("After the call to changeValueByPointer");
+    fmt::println("The value pD is pointing to: {}, the address of pD:{}",*pD, fmt::ptr(pD));
+    
 
     delete pD;
     return 0; /* exit gracefully*/
