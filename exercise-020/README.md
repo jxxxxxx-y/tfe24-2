@@ -1,6 +1,7 @@
 # Übung: Fahrzeuge, Vererbung & Aggregation
 
 ## Lernziele
+
 - Klassenhierarchie mit **abstrakten Basisklassen** und **überschriebenen** Methoden entwerfen.  
 - **Vererbung** (is-a) sinnvoll einsetzen (z. B. `Car` ist ein `Vehicle`).  
 - **Aggregation/Komposition** (has-a) für Teilsysteme nutzen (z. B. `Vehicle` hat einen `Motor`).  
@@ -8,6 +9,7 @@
 - Sauberer Umgang mit Ressourcen (z. B. `std::unique_ptr` für Besitzverhältnisse).  
 
 ## Fachlicher Kontext
+
 Im Studiengang Fahrzeugelektronik betrachten wir ein Fahrzeug als System mit unterschiedlichen Antrieben.  
 Die **Fahrzeugklasse** bildet die gemeinsamen Eigenschaften und das Verhalten ab, während **spezialisierte Fahrzeugtypen** Feinheiten überschreiben.  
 Der **Motor/Antrieb** ist als austauschbares Modul (Aggregation/Komposition) modelliert — so lassen sich Verbrenner, E-Motor oder Hybrid kombinieren.
@@ -18,15 +20,18 @@ Der **Motor/Antrieb** ist als austauschbares Modul (Aggregation/Komposition) mod
 
 ### 1) Klassen- & Schnittstellendesign
 
-**Fahrzeuge (Vererbung)**
+#### Fahrzeuge (Vererbung)
+
 - `class Vehicle` (abstrakt)
 - Spezialisierungen: `Car`, `Truck`, `Motorcycle`
 
-**Antriebe (Aggregation/Komposition)**
+####  Antriebe (Aggregation/Komposition)
+
 - `class IMotor` (abstrakt)
 - Implementierungen: `CombustionEngine`, `ElectricMotor`, optional `HybridMotor`
 
-**Aggregation/Komposition**
+#### Aggregation/Komposition
+
 - `Vehicle` besitzt genau einen `std::unique_ptr<IMotor> motor_`.
 
 ---
@@ -86,16 +91,9 @@ classDiagram
 
 ---
 
-## C++-Skeleton (Auszug)
-
-*(siehe motor.hpp, vehicle.hpp, main.cpp im Unterrichtsbeispiel)*
-
----
-
 ## Abgabe
 
 - `motor.hpp`, `vehicle.hpp`, `main.cpp`  
-- Kurze **README.md** mit Build‑Anleitung (`g++ -std=c++20 -Wall -Wextra main.cpp -o app`).  
 - Ergänzen Sie mindestens einen weiteren Fahrzeugtyp (z. B. `Motorcycle`) **oder** einen weiteren Motortyp (z. B. `HybridMotor`).  
 
 ---
