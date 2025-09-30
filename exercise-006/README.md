@@ -1,5 +1,23 @@
 # Übungsaufgabe: Generische `Point<T>`-Klasse (C++17-kompatibel)
 
+
+## Notwendige git Kommandos
+
+```sh
+git status
+git branch -a
+git switch main
+# create a new local branch based on the origin main
+git switch -c solution-006 origin/main
+# perform changes
+# ....
+git add exercise-006
+git commit -m "feat: add exercise number two"
+# push the changes to the cloud
+git push -u origin solution-006
+....
+```
+
 **Ziel:** Überführen der bisherigen `Point`-Klasse in eine **generische** Template-Klasse `Point<T>` für unterschiedliche Zahlentypen – **ohne C++20 Concepts**, vollständig **C++17-kompatibel**.  
 Schwerpunkte: Templates, `static_assert`/Type-Traits, sicherer Rückgabetyp für `distance_to`, `fmt`-Formatter, Catch2-Tests.
 
@@ -15,19 +33,24 @@ Schwerpunkte: Templates, `static_assert`/Type-Traits, sicherer Rückgabetyp für
 
 2. **Typ-Constraint (ohne Concepts)**
    - Beschränken Sie `T` auf arithmetische Typen über Type-Traits:
-     ```cpp
+
+   ```cpp
      #include <type_traits>
      static_assert(std::is_arithmetic<T>::value, "Point<T>: T must be arithmetic");
      ```
+
      > Hinweis: In C++17 ist `std::is_arithmetic_v<T>` via `<type_traits>` verfügbar. Sie können wahlweise `_v` verwenden.
 
 3. **Distance-Funktion**
    - Signatur:
+  
      ```cpp
      auto distance_to(const Point& other) const -> /* geeigneter Typ */;
      ```
+
    - Nutzen Sie als Rückgabetyp **`std::common_type_t<T, double>`** (oder `double`).  
    - Implementierung mit `std::hypot` (C++17 vorhanden). Vor dem Rechnen in den breiteren Typ casten:
+
      ```cpp
      using dist_t = std::common_type_t<T, double>;
      auto dx = static_cast<dist_t>(x) - static_cast<dist_t>(other.x);
@@ -37,6 +60,7 @@ Schwerpunkte: Templates, `static_assert`/Type-Traits, sicherer Rückgabetyp für
 
 4. **Vergleichsoperatoren**
    - Implementieren Sie `operator==` und `operator!=` **explizit** (kein `= default` erforderlich, aber erlaubt):
+
      ```cpp
      bool operator==(const Point& rhs) const { return x == rhs.x && y == rhs.y; }
      bool operator!=(const Point& rhs) const { return !(*this == rhs); }
@@ -45,6 +69,7 @@ Schwerpunkte: Templates, `static_assert`/Type-Traits, sicherer Rückgabetyp für
 5. **fmt-Integration (C++17)**
    - Spezialisieren Sie einen Formatter für `Point<T>`, damit `fmt::print("{}", p)` die Form `"(x, y)"` ausgibt.
    - Beispielgerüst:
+
      ```cpp
      #include <fmt/core.h>
 
@@ -56,6 +81,7 @@ Schwerpunkte: Templates, `static_assert`/Type-Traits, sicherer Rückgabetyp für
        }
      };
      ```
+
      > Achten Sie auf die Header-Reihenfolge: Der Formatter muss nach der Point-Deklaration sichtbar sein.
 
 6. **(Optional) Operatoren**
@@ -158,10 +184,10 @@ TEST_CASE("Point<T>: fmt-Formatter") {
 ```
 
 **Edge Cases:**  
+
 - Sehr große/negative Werte (Achtung bei Differenzen: Cast auf `dist_t` wie gezeigt).  
 - Viele aufeinanderfolgende `move`-Aufrufe (Stabilität).  
 - Typmischung in optionalen Operatoren (z. B. `Point<int>{} * 2.5`).
-
 
 ## Hinweise
 

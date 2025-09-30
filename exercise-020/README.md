@@ -1,5 +1,23 @@
 # Übung: Fahrzeuge, Vererbung & Aggregation
 
+## Notwendige git Kommandos
+
+```sh
+git status
+git branch -a
+git switch main
+# create a new local branch based on the origin main
+git switch -c solution-020 origin/main
+# perform changes
+# ....
+git add exercise-020
+git commit -m "feat: add exercise number two"
+# push the changes to the cloud
+git push -u origin solution-020
+....
+```
+
+
 ## Lernziele
 
 - Klassenhierarchie mit **abstrakten Basisklassen** und **überschriebenen** Methoden entwerfen.  

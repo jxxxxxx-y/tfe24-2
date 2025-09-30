@@ -1,5 +1,23 @@
 # Übungsaufgabe: Zeiger in C++ mit `fmt`
 
+
+## Notwendige git Kommandos
+
+```sh
+git status
+git branch -a
+git switch main
+# create a new local branch based on the origin main
+git switch -c solution-000 origin/main
+# perform changes
+git add exercise-000
+git commit -m "feat: add exercise number two"
+# push the changes to the cloud
+git push -u origin solution-000
+....
+```
+
+
 **Lernziel:** Wiederholung und Festigung des Verständnisses von Zeigern in C++ sowie Einführung in die Verwendung der [`fmt`](https://fmt.dev/)-Bibliothek zur Ausgabe.
 
 ---

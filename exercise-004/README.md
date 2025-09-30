@@ -1,5 +1,23 @@
 # Übungsaufgabe: Klassen in C++ – `Point`
 
+## Notwendige git Kommandos
+
+```sh
+git status
+git branch -a
+git switch main
+# create a new local branch based on the origin main
+git switch -c solution-004 origin/main
+# perform changes
+# ....
+git add exercise-004
+git commit -m "feat: add exercise number two"
+# push the changes to the cloud
+git push -u origin solution-004
+....
+```
+
+
 **Lernziel:** Verständnis der Grundlagen von Klassen in C++:
 
 - Attribute (Membervariablen)  

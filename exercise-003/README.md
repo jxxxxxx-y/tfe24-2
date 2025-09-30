@@ -5,9 +5,18 @@
 ```sh
 git status
 git branch -a
-git commit -m "fix: typo in Readme"
+git switch main
+# create a new local branch based on the origin main
+git switch -c solution-003 origin/main
+# perform changes
+# ....
+git add exercise-003
+git commit -m "feat: add exercise number two"
+# push the changes to the cloud
+git push -u origin solution-003
 ....
 ```
+
 
 ## Parameterraum
 

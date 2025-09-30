@@ -1,5 +1,22 @@
 # Übungsaufgabe: Referenzen in C++ mit `fmt`
 
+## Notwendige git Kommandos
+
+```sh
+git status
+git branch -a
+git switch main
+# create a new local branch based on the origin main
+git switch -c solution-001 origin/main
+# perform changes
+# ....
+git add exercise-001
+git commit -m "feat: add exercise number two"
+# push the changes to the cloud
+git push -u origin solution-001
+....
+```
+
 **Lernziel:** Verständnis des Unterschieds zwischen Übergabe von Variablen als Parameter, Übergabe per Zeiger und Übergabe per Referenz.  
 Alle Ausgaben erfolgen mit der [`fmt`](https://fmt.dev/)-Bibliothek.
 

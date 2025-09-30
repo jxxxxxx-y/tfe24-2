@@ -10,9 +10,11 @@ Begleitprojekt für Informatik 3 im Kurs tfe24-2 an der DHBW Ravensburg Campus F
 
 ## Synchronisation des eignen Forks
 
-Es wird davon ausgegangen, dass Sie einen Fork angelegt haben und von diesen geklont haben. Damit entspricht Ihr Fork der Bezeichnung ``origin``. Siehe hierzu auch die [Hinweise in der ersten Übungsaufgabe](exercise-001#upstream-hinzuf%C3%BCgen).
+Es wird davon ausgegangen, dass Sie einen [Fork](https://docs.github.com/de/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) angelegt haben und von diesen geklont haben. Damit entspricht Ihr Fork der Bezeichnung ``origin``.
 
-Um die aktuellen Änderungen in die lokale Kopie des ``tfe24-2`` Repository zu übertragen sollten Sie zunächst ein ``git fetch`` durchführen
+Um die aktuellen Änderungen in die lokale Kopie des ``tfe24-2`` Repository zu übertragen sollten Sie zunächst ein ``git fetch`` durchführen.
+
+**WICHTIG** Allgemeine Hinweise zu Forks finden sie in der [GitLab Doku](https://docs.github.com/de/pull-requests/collaborating-with-pull-requests/working-with-forks/about-forks)
 
 ```sh
 git fetch upstream
@@ -24,23 +26,21 @@ Nun checken wir die lokale Kopie des zu synchronisierenden Branches aus, in unse
 git checkout main
 ```
 
-Der Befehl ``git pull`` aktualisiert nun den lokalen Branch.
+## Stellen Sie Ihren Fork auf privat
 
-```sh
-git pull upstream main
-```
+**WICHTIG** Bitte stellen Sie Ihren Fork auf privat damit die Kommilitonen nicht bei Ihnen die Lösungen kopieren können.
 
-Sollte es hierbei zu einem Konflikt kommen haben Sie eventuell versehentlich lokale commits auf Ihrem ``main`` Branch durchgeführt. Das sollten Sie tunlichst vermeiden.
-
-Im Erfolgsfall müssen jetzt nur noch die Daten in Ihren Fork gepusht werden:
-
-```sh
-git push origin main
-```
+Damit Sie sie die Aufgaben später abgeben können fügen Sie mich bitte zu Ihrem Repository hinzu. Der Benutzername lautet: `graugans`
 
 ## Übungsaufgaben
 
 - [Übungsaufgabe Nr. 1](exercise-001/README.md)
+
+## Abgabe der Übungsaufgaben
+
+Die Übungsaufgaben können jeweils in Gruppen bis zu 3 Personen durchgeführt werden. Die Übungsaufgaben sind als [Pull-Request](https://docs.github.com/de/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) abzugeben. Als Reviewer fügen Sie bitte meinen Benutzernamen hinzu: `graugans`.
+
+Neben dem Code erstellen Sie bitte zusätzlich eine kleine Dokumentation in Markdown.
 
 ## Hilfreiche Links
 

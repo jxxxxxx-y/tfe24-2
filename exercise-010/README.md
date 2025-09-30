@@ -5,20 +5,18 @@
 ```sh
 git status
 git branch -a
-git fetch --all
-# create a new local branch based on the upstream (graugans)
-git switch -c solution-002 upstream/main
-# copy the folder exercise-001 to exercise-002
-cp exercise-001/ exercise-002 -r
-# modify the CMakeLists.txt and main.cpp in the directory exercise-002
-# modify the top-level CMakeLists.txt
-# commit the changes
-git add exercise-002
+git switch main
+# create a new local branch based on the origin main
+git switch -c solution-010 origin/main
+# perform changes
+# ....
+git add exercise-010
 git commit -m "feat: add exercise number two"
 # push the changes to the cloud
-git push -u origin solution-002
+git push -u origin solution-010
 ....
 ```
+
 
 ## Einfache `myvector`-Implementierung in C++
 

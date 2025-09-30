@@ -8,6 +8,8 @@ git branch -a
 git switch main
 # create a new local branch based on the origin main
 git switch -c solution-002 origin/main
+# perform changes
+# ....
 git add exercise-002
 git commit -m "feat: add exercise number two"
 # push the changes to the cloud

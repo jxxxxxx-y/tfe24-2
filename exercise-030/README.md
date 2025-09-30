@@ -1,5 +1,22 @@
 # Übung: Strategy Pattern – Logger mit JSON- und fmt-Ausgabe
 
+## Notwendige git Kommandos
+
+```sh
+git status
+git branch -a
+git switch main
+# create a new local branch based on the origin main
+git switch -c solution-030 origin/main
+# perform changes
+# ....
+git add exercise-030
+git commit -m "feat: add exercise number two"
+# push the changes to the cloud
+git push -u origin solution-030
+....
+```
+
 ## Lernziele
 
 - **Strategy Pattern** verstehen und anwenden (Austausch von Algorithmen zur Laufzeit).

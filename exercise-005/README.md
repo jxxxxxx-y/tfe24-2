@@ -1,10 +1,23 @@
 # Übungsaufgabe: `Point` mit Catch2 testen (Template-kompatibel)
 
-**Lernziel:** Schreiben aussagekräftiger Unit-Tests für die Klasse `Point` mit Catch2 – kompatibel zur bereitgestellten Template-Struktur aus `templates/catch2` im TFE23-2-Repository.
+## Notwendige git Kommandos
 
-> **Hinweis zur Einbindung:** Nutzen Sie die Catch2-Integration **gemäß Ihrem Template**.  
-> - Falls Ihr CMake bereits `Catch2WithMain` linkt (üblich bei Catch2 v3): `#include <catch2/catch_test_macros.hpp>` **ohne** `CATCH_CONFIG_MAIN`.  
-> - Falls Ihr Template den **amalgamierten Header** verwendet: `#define CATCH_CONFIG_MAIN` und `#include "catch_amalgamated.hpp"`.
+```sh
+git status
+git branch -a
+git switch main
+# create a new local branch based on the origin main
+git switch -c solution-005 origin/main
+# perform changes
+# ....
+git add exercise-005
+git commit -m "feat: add exercise number two"
+# push the changes to the cloud
+git push -u origin solution-005
+....
+```
+
+**Lernziel:** Schreiben aussagekräftiger Unit-Tests für die Klasse `Point` mit Catch2 – kompatibel zur bereitgestellten Template-Struktur aus `templates/catch2` im tfe24-2-Repository.
 
 ---
 
@@ -13,29 +26,31 @@
 Erstellen Sie eine Testdatei `tests/test_point.cpp` und implementieren Sie folgende Testbereiche. Wählen Sie passende **`TEST_CASE`**- und **`SECTION`**-Namen, die klar machen, **was** geprüft wird.
 
 ### A) Konstruktoren
+
 - `Point(int x, int y)` setzt beide Koordinaten korrekt.
 - Standardkonstruktor setzt `(0, 0)`.
 
 ### B) `move(int dx, int dy)`
+
 - Positive und negative Verschiebungen ändern `x`/`y` relativ.
 - Mehrere aufeinanderfolgende Moves verhalten sich wie die Summe der Verschiebungen (assoziativ).
 
 ### C) `distance_to(const Point& other) const`
+
 - Euklidische Distanz zwischen `(0,0)` und `(3,4)` ist `5.0`.
 - Distanz ist **symmetrisch**: `a→b == b→a`.
 - Distanz zu sich selbst ist `0.0`.
 - **Floating-Point-Vergleiche:** verwenden Sie `Approx(…).margin(1e-12)` oder `.epsilon(1e-12)`.
 
 ### D) Edge Cases (mindestens zwei selbst wählen)
+
 - Große/negative Koordinaten (denken Sie an mögliche Überläufe bei Differenzen; ggf. Cast auf `double` in der Distanzberechnung).
 - Dreiecksungleichung (optional): `dist(a,c) ≤ dist(a,b) + dist(b,c)`.
 - Stabilität bei vielen aufeinanderfolgenden `move`-Aufrufen.
 
 ---
 
-## Beispielgerüst (bitte an Ihr Template anpassen)
-
-> **Variante 1 (Catch2 v3, mit `Catch2WithMain`)** – bevorzugt, wenn CMake das Main bereitstellt:
+## Beispielgerüst
 
 ```cpp
 #include <catch2/catch_test_macros.hpp>
@@ -67,24 +82,6 @@ TEST_CASE("Point: distance_to – euklidisch & robust") {
     REQUIRE( a.distance_to(b) == Approx(5.0).margin(1e-12) );
     REQUIRE( b.distance_to(a) == Approx(5.0).margin(1e-12) );
     REQUIRE( a.distance_to(a) == Approx(0.0).margin(1e-12) );
-}
-```
-
-> **Variante 2 (amalgamierter Header in `tests/`)** – falls Ihr Template so arbeitet:
-
-```cpp
-#define CATCH_CONFIG_MAIN
-#include "catch_amalgamated.hpp"
-#include "point.hpp"
-
-TEST_CASE("Point: Konstruktoren setzen Koordinaten korrekt") {
-    Point p1{2, 3};
-    REQUIRE(p1.x == 2);
-    REQUIRE(p1.y == 3);
-
-    Point p2;
-    REQUIRE(p2.x == 0);
-    REQUIRE(p2.y == 0);
 }
 ```
 
