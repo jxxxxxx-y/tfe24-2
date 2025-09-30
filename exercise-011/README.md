@@ -1,170 +1,316 @@
-# Übungsaufgabe: Generische `Point<T>`-Klasse (C++17-kompatibel)
+# Aufgabenstellung (erweitert): `myvector` + JSON‑getriebene Tests mit Catch2 & *nlohmann::json*
 
-**Ziel:** Überführen der bisherigen `Point`-Klasse in eine **generische** Template-Klasse `Point<T>` für unterschiedliche Zahlentypen – **ohne C++20 Concepts**, vollständig **C++17-kompatibel**.  
-Schwerpunkte: Templates, `static_assert`/Type-Traits, sicherer Rückgabetyp für `distance_to`, `fmt`-Formatter, Catch2-Tests.
+## Notwendige git Kommandos
 
----
-
-## Anforderungen
-
-1. **Klassen-Template**
-   - `template <typename T> class Point` mit Membern `T x; T y;`
-   - Standardkonstruktor: `x = T{}`, `y = T{}`
-   - Wertekonstruktor: `Point(T x, T y)`
-   - Methode: `void move(T dx, T dy)`
-
-2. **Typ-Constraint (ohne Concepts)**
-   - Beschränken Sie `T` auf arithmetische Typen über Type-Traits:
-     ```cpp
-     #include <type_traits>
-     static_assert(std::is_arithmetic<T>::value, "Point<T>: T must be arithmetic");
-     ```
-     > Hinweis: In C++17 ist `std::is_arithmetic_v<T>` via `<type_traits>` verfügbar. Sie können wahlweise `_v` verwenden.
-
-3. **Distance-Funktion**
-   - Signatur:
-     ```cpp
-     auto distance_to(const Point& other) const -> /* geeigneter Typ */;
-     ```
-   - Nutzen Sie als Rückgabetyp **`std::common_type_t<T, double>`** (oder `double`).  
-   - Implementierung mit `std::hypot` (C++17 vorhanden). Vor dem Rechnen in den breiteren Typ casten:
-     ```cpp
-     using dist_t = std::common_type_t<T, double>;
-     auto dx = static_cast<dist_t>(x) - static_cast<dist_t>(other.x);
-     auto dy = static_cast<dist_t>(y) - static_cast<dist_t>(other.y);
-     return std::hypot(dx, dy);
-     ```
-
-4. **Vergleichsoperatoren**
-   - Implementieren Sie `operator==` und `operator!=` **explizit** (kein `= default` erforderlich, aber erlaubt):
-     ```cpp
-     bool operator==(const Point& rhs) const { return x == rhs.x && y == rhs.y; }
-     bool operator!=(const Point& rhs) const { return !(*this == rhs); }
-     ```
-
-5. **fmt-Integration (C++17)**
-   - Spezialisieren Sie einen Formatter für `Point<T>`, damit `fmt::print("{}", p)` die Form `"(x, y)"` ausgibt.
-   - Beispielgerüst:
-     ```cpp
-     #include <fmt/core.h>
-
-     template <typename T>
-     struct fmt::formatter<Point<T>> : fmt::formatter<std::string_view> {
-       template <typename FormatContext>
-       auto format(const Point<T>& p, FormatContext& ctx) const {
-         return fmt::format_to(ctx.out(), "({}, {})", p.x, p.y);
-       }
-     };
-     ```
-     > Achten Sie auf die Header-Reihenfolge: Der Formatter muss nach der Point-Deklaration sichtbar sein.
-
-6. **(Optional) Operatoren**
-   - `Point<T> operator+(const Point<T>& rhs) const;`
-   - `Point<T> operator-(const Point<T>& rhs) const;`
-   - Skalar-Multiplikation: `template <typename U> Point<std::common_type_t<T,U>> operator*(U s) const;`
-
----
-
-## Beispiel-Skelett (unvollständig, zur Orientierung)
-
-```cpp
-// point.hpp
-#pragma once
-#include <type_traits>
-#include <cmath>
-#include <utility> // std::move (falls benötigt)
-
-template <typename T>
-class Point {
-  static_assert(std::is_arithmetic<T>::value, "Point<T>: T must be arithmetic");
-public:
-  T x{};
-  T y{};
-
-  Point() = default;
-  Point(T x_, T y_) : x{x_}, y{y_} {}
-
-  void move(T dx, T dy) { x += dx; y += dy; }
-
-  using dist_t = std::common_type_t<T, double>;
-  auto distance_to(const Point& other) const -> dist_t {
-    const auto dx = static_cast<dist_t>(x) - static_cast<dist_t>(other.x);
-    const auto dy = static_cast<dist_t>(y) - static_cast<dist_t>(other.y);
-    return std::hypot(dx, dy);
-  }
-
-  bool operator==(const Point& rhs) const { return x == rhs.x && y == rhs.y; }
-  bool operator!=(const Point& rhs) const { return !(*this == rhs); }
-};
-```
-
-```cpp
-// point_fmt.hpp (oder unter point.hpp, nach der Klasse)
-#pragma once
-#include <fmt/core.h>
-template <typename T>
-struct fmt::formatter<Point<T>> : fmt::formatter<std::string_view> {
-  template <typename FormatContext>
-  auto format(const Point<T>& p, FormatContext& ctx) const {
-    return fmt::format_to(ctx.out(), "({}, {})", p.x, p.y);
-  }
-};
+```sh
+git status
+git branch -a
+git fetch --all
+# create a new local branch based on the upstream (graugans)
+git switch -c solution-002 upstream/main
+# copy the folder exercise-001 to exercise-002
+cp exercise-001/ exercise-002 -r
+# modify the CMakeLists.txt and main.cpp in the directory exercise-002
+# modify the top-level CMakeLists.txt
+# commit the changes
+git add exercise-002
+git commit -m "feat: add exercise number two"
+# push the changes to the cloud
+git push -u origin solution-002
 ```
 
 ---
 
-## Tests (Catch2, C++17)
+## Einfache `myvector`-Implementierung in C++
 
-Erstellen Sie `tests/test_point_template_cpp17.cpp` (Pfade/Includes an Ihr Template anpassen).  
-Verwenden Sie `Approx` für Gleitkomma-Vergleiche.
+### Kontext & Lernziele
 
-```cpp
-#include <catch2/catch_test_macros.hpp>
-#include "point.hpp"
-#include <type_traits>
-#include <fmt/core.h>
-#include "point_fmt.hpp" // falls der Formatter separat ist
+Ziel dieser Aufgabe ist es, eine vereinfachte Variante von `std::vector`
+zu entwickeln, um die Grundlagen von **dynamischer Speicherverwaltung**
+in C++ zu verstehen **und** diese über **JSON‑getriebene Tests mit Catch2**
+automatisiert zu verifizieren:
 
-TEST_CASE("Point<T>: Konstruktion & move (int)") {
-  Point<int> p{2, 3};
-  REQUIRE(p.x == 2);
-  REQUIRE(p.y == 3);
+- Dynamischen Speicher mit `new[]` anfordern und mit `delete[]` freigeben.  
+- Speicherwachstum (Capacity, Reallocation) und Besitzverhältnisse nachvollziehen.  
+- **Rule of Three** (Destruktor, Copy‑Konstruktor, Copy‑Zuweisung) sicher anwenden.  
+- Grenzenprüfung und einfache Ausnahme‑Sicherheit umsetzen.  
+- JSON‑basierte Testvektoren mit *nlohmann::json* einlesen und in **Catch2** als dynamische Testfälle ausführen.
 
-  p.move(1, -4);
-  REQUIRE(p.x == 3);
-  REQUIRE(p.y == -1);
-}
+> **Hinweis:** Das JSON‑Parsing und Catch2 sind bereits im Projekt eingebunden.
 
-TEST_CASE("Point<T>: Konstruktion & move (double)") {
-  Point<double> p{2.5, -3.75};
-  p.move(0.5, 0.25);
-  REQUIRE(p.x == Approx(3.0));
-  REQUIRE(p.y == Approx(-3.5));
-}
+---
 
-TEST_CASE("Point<T>: distance_to – Typ & Wert") {
-  Point<int> a{0,0}, b{3,4};
-  typedef decltype(a.distance_to(b)) dist_t;
-  STATIC_REQUIRE(!std::is_same<dist_t, int>::value);
-  REQUIRE(a.distance_to(b) == Approx(5.0).margin(1e-12));
-  REQUIRE(b.distance_to(a) == Approx(5.0).margin(1e-12));
-  REQUIRE(a.distance_to(a) == Approx(0.0).margin(1e-12));
-}
+## Aufgabenbeschreibung
 
-TEST_CASE("Point<T>: fmt-Formatter") {
-  Point<int> pi{1,2};
-  REQUIRE(fmt::format("{}", pi) == "(1, 2)");
+Implementieren Sie eine generische Klasse `myvector<T>` im Namespace `mystd`, angelehnt an die Standardbibliothek:  
+[cppreference: `std::vector`](https://en.cppreference.com/w/cpp/container/vector)
+
+### Minimal geforderte öffentliche Schnittstelle
+
+- `void push_back(const T& value);`
+- `T& at(size_t index);` und `const T& at(size_t index) const;`
+- `size_t size() const noexcept;`
+- `void resize(size_t new_size);`
+- `void clear() noexcept;`
+
+### Zusätzlich **verbindlich**
+
+- **Konstruktoren**
+  - `myvector() noexcept;`
+  - `explicit myvector(size_t count);`
+- **Destruktor**
+- **Rule of Three**: Copy‑Konstruktor, Copy‑Zuweisungsoperator
+- **Capacity‑Basics**
+  - `size_t capacity() const noexcept;`
+  - `void reserve(size_t new_cap);`
+- **`operator[]`** (ohne Bounds‑Check)
+
+---
+
+## Vorgaben & Einschränkungen
+
+- **Nicht erlaubt:** `std::vector`, `std::unique_ptr<T[]>`, `std::allocator`, `malloc/free`, externe Bibliotheken.  
+- **Erlaubt:** `<stdexcept>`, `<algorithm>`, `<utility>`, `<initializer_list>`, `<cstddef>`, `<new>`, `<string>`.  
+- **Namensraum:** `namespace mystd`.  
+- **Dateistruktur (Vorschlag):**
+  - `include/myvector.hpp` — Implementierung  
+  - `tests/test_myvector_json.cpp` — JSON‑getriebene Catch2‑Tests  
+  - `tests/test_vectors.json` — Testvektoren
+
+---
+
+## JSON‑getriebene Tests (Pflichtteil)
+
+Schreiben Sie **einen** Catch2‑Test, der **alle** Testfälle aus einer JSON‑Datei lädt und dynamisch ausführt.  
+Pfad der Datei: `tests/test_vectors.json` (kann in CMake/CTest als Arbeitsverzeichnis konfiguriert werden).
+
+### Eingabe‑JSON: Schemastruktur
+
+```jsonc
+{
+  "cases": [
+    {
+      "name": "push_resize_read",
+      "initial_capacity": 0,           // optional
+      "initial_size": 0,               // optional
+      "initial_values": [1, 2, 3],     // optional (überschreibt initial_size)
+      "operations": [
+        { "op": "push_back", "value": 5 },
+        { "op": "resize", "new_size": 6 },
+        { "op": "at", "index": 1 },
+        { "op": "clear" },
+        { "op": "reserve", "new_cap": 32 }
+      ],
+      "expect": {
+        "final_size": 0,               // Pflicht
+        "min_capacity": 32,            // optional (anstelle exakter capacity‑Prüfung)
+        "reads": [ { "index": 1, "value": 2 } ],     // optional
+        "errors": [                                   // optional
+          // z. B. { "op": "at", "index": 99, "error": "out_of_range" }
+        ],
+        "final_values": [ ]            // optional: Inhalt ab Index 0..size-1 prüfen
+      }
+    }
+  ]
 }
 ```
 
-**Edge Cases:**  
-- Sehr große/negative Werte (Achtung bei Differenzen: Cast auf `dist_t` wie gezeigt).  
-- Viele aufeinanderfolgende `move`-Aufrufe (Stabilität).  
-- Typmischung in optionalen Operatoren (z. B. `Point<int>{} * 2.5`).
+**Regeln & Bewertungshinweise:**  
+- `initial_capacity` → via `reserve()` anwenden.  
+- `initial_values` füllt den Vektor; falls vorhanden, **ignoriert** `initial_size`.  
+- `operations` werden sequenziell ausgeführt.  
+- Bei `at`‑Zugriffen sollen gelesene Werte in eine Ergebnisliste `reads` protokolliert werden.  
+- Fehler/Exceptions (z. B. Out‑of‑Range) **beenden** den Testfall nicht, sondern werden als Einträge in `errors` gesammelt.  
+- In den Erwartungen gilt:
+  - **Pflicht:** `final_size` muss exakt stimmen.  
+  - **Kapazität:** Prüfen Sie **entweder** `min_capacity` (≥) **oder** verzichten Sie auf eine Kapazitätsprüfung, um Wachstumsstrategien nicht zu erzwingen.  
+  - **`reads`/`errors`:** vergleichen Sie **in Reihenfolge** der Ausführung.  
+  - **`final_values`:** falls angegeben, prüfen Sie Inhalte über `operator[]`.
 
+---
 
-## Hinweise
+## Beispiel‑Testvektoren `tests/test_vectors.json`
 
-- `std::hypot` ist in C++17 verfügbar und robust für die euklidische Norm.  
-- `STATIC_REQUIRE` ist ein Catch2-Makro (Compile-Time-Check). Alternativ: `REQUIRE(std::is_same<...>::value)` (Laufzeit).  
-- Achten Sie darauf, dass der Formatter **nach** der Klassendefinition sichtbar ist (oder in separater Headerdatei, die nach `point.hpp` inkludiert wird).
+> Dies ist ein **Beispiel**. Sie dürfen/solllen weitere Fälle ergänzen (Out‑of‑Range, mehrfaches Reallocate, leerer Vektor, nur `reserve`, …).
+
+```json
+{
+  "cases": [
+    {
+      "name": "push_and_read",
+      "initial_values": [1, 2, 3],
+      "operations": [
+        { "op": "push_back", "value": 5 },
+        { "op": "at", "index": 1 }
+      ],
+      "expect": {
+        "final_size": 4,
+        "reads": [ { "index": 1, "value": 2 } ],
+        "final_values": [1, 2, 3, 5]
+      }
+    },
+    {
+      "name": "resize_up_and_down",
+      "initial_capacity": 0,
+      "initial_size": 2,
+      "operations": [
+        { "op": "resize", "new_size": 10 },
+        { "op": "resize", "new_size": 3 }
+      ],
+      "expect": {
+        "final_size": 3,
+        "min_capacity": 10
+      }
+    },
+    {
+      "name": "out_of_range_read_is_error",
+      "initial_values": [7],
+      "operations": [
+        { "op": "at", "index": 5 }
+      ],
+      "expect": {
+        "final_size": 1,
+        "errors": [ { "op": "at", "index": 5, "error": "out_of_range" } ]
+      }
+    }
+  ]
+}
+```
+
+---
+
+## Catch2‑Test (Skeleton)
+
+> Catch2 ist bereits eingebunden. Verwenden Sie **einen** Test, der alle Cases aus `tests/test_vectors.json` lädt und mit `DYNAMIC_SECTION`/`INFO` aussagekräftige Fehlermeldungen erzeugt.
+
+```cpp
+// tests/test_myvector_json.cpp
+#include <catch2/catch_all.hpp>
+#include "myvector.hpp"
+#include "nlohmann/json.hpp"
+#include <fstream>
+#include <string>
+
+using json = nlohmann::json;
+
+TEST_CASE("JSON-driven test cases for mystd::myvector<int>", "[json][myvector]") {
+    // Pfad ggf. in CTest via WORKING_DIRECTORY setzen
+    std::ifstream in("tests/test_vectors.json");
+    REQUIRE(in && "tests/test_vectors.json not found");
+    json doc;
+    in >> doc;
+    REQUIRE(doc.contains("cases"));
+    for (const auto& tc : doc["cases"]) {
+        const std::string name = tc.value("name", "<unnamed>");
+        DYNAMIC_SECTION(name) {
+            mystd::myvector<int> v;
+
+            if (tc.contains("initial_capacity"))
+                v.reserve(tc["initial_capacity"].get<size_t>());
+
+            if (tc.contains("initial_values")) {
+                const auto& arr = tc["initial_values"];
+                v.resize(arr.size());
+                for (size_t i = 0; i < arr.size(); ++i) v[i] = arr[i].get<int>();
+            } else if (tc.contains("initial_size")) {
+                v.resize(tc["initial_size"].get<size_t>());
+            }
+
+            json reads = json::array();
+            json errors = json::array();
+
+            if (tc.contains("operations")) {
+                for (const auto& op : tc["operations"]) {
+                    try {
+                        const std::string op_name = op.value("op", "");
+                        if (op_name == "push_back") {
+                            v.push_back(op.at("value").get<int>());
+                        } else if (op_name == "resize") {
+                            v.resize(op.at("new_size").get<size_t>());
+                        } else if (op_name == "at") {
+                            size_t idx = op.at("index").get<size_t>();
+                            int value = v.at(idx);
+                            reads.push_back({{"index", idx}, {"value", value}});
+                        } else if (op_name == "clear") {
+                            v.clear();
+                        } else if (op_name == "reserve") {
+                            v.reserve(op.at("new_cap").get<size_t>());
+                        } else {
+                            errors.push_back({{"op", op_name}, {"error", "unknown_operation"}});
+                        }
+                    } catch (const std::out_of_range&) {
+                        json e = op;
+                        e["error"] = "out_of_range";
+                        errors.push_back(e);
+                    } catch (const std::exception& e) {
+                        json eobj = op;
+                        eobj["error"] = std::string("exception: ") + e.what();
+                        errors.push_back(eobj);
+                    }
+                }
+            }
+
+            REQUIRE(tc.contains("expect"));
+            const auto& expect = tc["expect"];
+
+            // final_size (exakt)
+            REQUIRE(v.size() == expect.at("final_size").get<size_t>());
+
+            // capacity (nur prüfen, wenn min_capacity angegeben)
+            if (expect.contains("min_capacity")) {
+                CHECK(v.capacity() >= expect["min_capacity"].get<size_t>());
+            }
+
+            // reads (optional, Reihenfolge muss stimmen)
+            if (expect.contains("reads")) {
+                CHECK(reads == expect["reads"]);
+            }
+
+            // errors (optional, Reihenfolge entspricht Ausführung)
+            if (expect.contains("errors")) {
+                CHECK(errors == expect["errors"]);
+            }
+
+            // final_values (optional)
+            if (expect.contains("final_values")) {
+                const auto& vals = expect["final_values"];
+                REQUIRE(vals.size() == v.size());
+                for (size_t i = 0; i < vals.size(); ++i) {
+                    INFO("Mismatch at index " << i);
+                    CHECK(v[i] == vals[i].get<int>());
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+## CMake‑Hinweis (Tests)
+
+Falls nötig, fügen Sie ein Testtarget hinzu (Catch2 ist bereits vorhanden):
+
+```cmake
+add_executable(test_myvector_json tests/test_myvector_json.cpp)
+target_include_directories(test_myvector_json PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# Catch2 und nlohmann::json sind eingebunden; ansonsten:
+# target_link_libraries(test_myvector_json PRIVATE Catch2::Catch2WithMain)
+add_test(NAME myvector_json_tests COMMAND test_myvector_json WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+```
+
+---
+
+## Abgabe
+
+- `include/myvector.hpp`
+- `tests/test_myvector_json.cpp`
+- `tests/test_vectors.json` (mit mindestens 5 sinnvollen Fällen inkl. Fehlerfall)
+- Kurze `README.md` mit Build‑ und Test‑Anleitung:
+  ```sh
+  cmake -S . -B build
+  cmake --build build -j
+  ctest --test-dir build --output-on-failure
+  ```
+
+Viel Erfolg beim Test‑getriebenen „Selbst‑Vectorn“! 🚀
