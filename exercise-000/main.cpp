@@ -14,10 +14,10 @@ auto main(int argc, char **argv) -> int
     //fmt::print("Hello, {}!\n", tfe24::PROJECT_NAME);
 
     /* INSERT YOUR CODE HERE */
-
+    // Part 1: Pointer-basics
     int x = 10;
     int *p = &x;
     fmt::print("The value of x is: {}\n", *p);
-
+    fmt::print("Adress of x is: {}\n", fmt)
     return 0; /* exit gracefully*/
 }
