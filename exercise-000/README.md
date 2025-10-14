@@ -3,8 +3,7 @@
 ## Details
 
 Datum: 30.09.2025
-Link zu [Rapla](https://rapla-ravensburg.dhbw.de/rapla?page=calendar&user=Regulski&file=TFE24-2&prev=%3C%3C&day=7&month=10&year=2025)
-
+Link zu [Rapla](https://rapla-ravensburg.dhbw.de/rapla?page=calendar&user=Regulski&file=TFE24-2&day=23&month=9&year=2025&next=%3E%3E)
 
 ## Notwendige git Kommandos
 
