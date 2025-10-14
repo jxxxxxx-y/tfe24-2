@@ -4,6 +4,10 @@
 #include "CLI/CLI.hpp"
 #include "config.h"
 
+int globalVar = 1;
+
+void foo();
+
 auto main(int argc, char **argv) -> int
 {
     /**
@@ -26,9 +30,44 @@ auto main(int argc, char **argv) -> int
      * it is much more convenient than std::cout and printf
      * More info at https://fmt.dev/latest/api.html
      */
-    fmt::print("Hello, {}!\n", app.get_name());
+   
 
-    /* INSERT YOUR CODE HERE */
+    // Part 1 - Global Variable 
+
+    fmt::print("Global variable value: {}\n", globalVar);
+    fmt::print("Adress of global variable is: {}\n", fmt::ptr(&globalVar));
+
+    // Part 2 - Local Variable
+
+    int localVar = 2;
+    fmt::print("Local Variable value: {}\n", localVar);
+    fmt::print("Adress of local variable is: {}\n", fmt::ptr(&localVar));
+
+    // Part 3 - Dynamic Variable
+
+    int* heapVar = new int(3);
+    fmt::print("Dynamic Variable value: {}\n", *heapVar);
+    fmt::print("Adress of dynamic variable is: {}\n", fmt::ptr(&heapVar));
+    delete heapVar;
+
+    // Part 4 - Funktions 
+
+    fmt::print("Adress of Foo: {}\n", fmt::ptr(&foo));
+
+    // Fazit
+    /* 
+    Globale Variablen werden im Data-Segment gespeichert, Lokale Variablen im Stack und dynamische Variablen im Heap. 
+    Da der Heapspeicher begrenzt ist, und bei der Initialisierung von dynamisch allozierten Variablen viel Speicher 
+    reserviert wird, sollte dieser am Ende des Programms freigegeben werden.
+    Bei variabel allozierten Variablen zeigt der Variablenname als Pointer auf den reservierten Speicher,
+    lokale Variablen sind feste Speicherzellen, in denen der Wert gespeichert wird.
+    */
 
     return 0; /* exit gracefully*/
 }
+
+void foo()
+    {
+        fmt::print("Hello from foo!\n");
+
+    };
