@@ -1,5 +1,10 @@
 # Übungsaufgabe: Referenzen in C++ mit `fmt`
 
+## Details
+
+Datum: 14.10.2025
+Link zu [Rapla](https://rapla-ravensburg.dhbw.de/rapla?page=calendar&user=Regulski&file=TFE24-2&day=7&month=10&year=2025&next=%3E%3E)
+
 ## Notwendige git Kommandos
 
 ```sh
@@ -57,6 +62,12 @@ Definieren Sie zwei Funktionen:
 3. Rufen Sie `changeValueByReference(y);` auf und geben Sie **vor und nach dem Funktionsaufruf** den Wert von `y` aus.
 
 ---
+
+## Zusatzaufgabe
+
+- Vergleichen Sie die Referenz mit dem Zeiger, was sind die Unterschiede?
+- Erstellen Sie Eine Klasse und deklarieren Sie eine Membervariable vom Typ Referenz, wie kann die Klasse nun erzeugt werden, warum ist das so?
+
 
 > **Hinweis:**  
 > - Bei der Übergabe einer Variable als **Parameter** wird eine Kopie übergeben – die Originalvariable bleibt unverändert.  
