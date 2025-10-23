@@ -4,6 +4,9 @@
 #include "CLI/CLI.hpp"
 #include "config.h"
 
+#include "point.hpp"
+#include "point.hpp"
+
 auto main(int argc, char **argv) -> int
 {
     /**
