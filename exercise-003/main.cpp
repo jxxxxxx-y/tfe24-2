@@ -18,7 +18,7 @@ auto main(int argc, char **argv) -> int
     try
     {
         app.set_version_flag("-V,--version", fmt::format("{} {}", PROJECT_VER, PROJECT_BUILD_DATE));
-        app.add_option("-c,--count", counter, "An counter option")->default_val("20");
+        app.add_option("-c,--count", counter, "An counter option")->default_val("3");
         app.parse(argc, argv);
     }
     catch (const CLI::ParseError &e)
@@ -43,10 +43,30 @@ auto main(int argc, char **argv) -> int
     std::uniform_int_distribution<int> uniform_dist(1, 100);
     int rand_value = uniform_dist(e1);
 
-    for (int i = 0; i < counter; ++i)
+    std::vector<unsigned int> numbers;
+    auto start = std::chrono::system_clock::now();
+    for (int i = 0; i < counter; i++)
     {
-        fmt::print("Random value {}: {}\n", i, uniform_dist(e1));
+        numbers.push_back(uniform_dist(e1));
     }
+    auto end = std::chrono::system_clock::now();
+
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    fmt::println("The inserting took: {}", elapsed);
+    fmt::println("The random vector: [ {} ]", fmt::join(numbers, ", "));
+
+    fmt::println("Let's sort the numbers vector");
+    fmt::println("--------------------------------------------------------------------------");
+
+    start = std::chrono::system_clock::now();
+    std::sort(numbers.begin(), numbers.end(), std::less<int>());
+    end = std::chrono::system_clock::now();
+
+    fmt::println("The sorted numbers vector");
+    fmt::println("--------------------------------------------------------------------------");
+    fmt::println("The sorted vector: [ {} ]", fmt::join(numbers, ", "));
+    const auto elapsed_sort = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    fmt::println("The sorting took: {}", elapsed_sort);
 
     return 0; /* exit gracefully*/
 }
