@@ -1,5 +1,10 @@
 # Aufgabenstellung
 
+## Details
+
+Datum: 21.10.2025
+Link zu [Rapla](https://rapla-ravensburg.dhbw.de/rapla?page=calendar&user=Regulski&file=TFE24-2&day=14&month=10&year=2025&next=%3E%3E)
+
 ## Notwendige git Kommandos
 
 ```sh
