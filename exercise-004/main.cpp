@@ -32,8 +32,13 @@ auto main(int argc, char **argv) -> int
 
     // exercise-004
 
+    Point p1(35, 26);
+    p1.print();
+    p1.move(4,6);
+    p1.print();
+    Point p2(10, 12);
+    fmt::print("Distance {}\n", p1.distance(p2));
     
-
     return 0; /* exit gracefully*/
 
 }

@@ -5,12 +5,16 @@ class Point {
 
     public: 
     Point();
-    Point (double x, double y);
+    Point (int x, int y);
     ~Point();
+    void move(int dx, int dy);
+    void print() const;
+
+    double distance(const Point& other) const;
 
     private:
-    double m_x;
-    double m_y;
+    int m_x;
+    int m_y;
 
 };
 
