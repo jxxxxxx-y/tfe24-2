@@ -2,7 +2,7 @@
 #include <fmt/format.h>
 
 #include <nlohmann/json.hpp>
-
+#include "point.hpp"
 #include "CLI/CLI.hpp"
 #include "config.h"
 
@@ -33,7 +33,15 @@ auto main(int argc, char **argv) -> int
      */
     fmt::print("Hello, {}!\n", app.get_name());
 
-    /* INSERT YOUR CODE HERE */
+    Point<int> p(0,0);
+    fmt::print("Initial Point position: ({}, {})\n", p.x_m, p.y_m);
+    
+    p.move(5,7);
+    fmt::print("Point position after move: ({}, {})\n", p.x_m, p.y_m);
+
+    Point<int> b(3,4);
+    fmt::print("Distance to b: {}\n", p.distance_to(b));
+
 
     return 0; /* exit gracefully*/
 }
