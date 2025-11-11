@@ -43,7 +43,7 @@ in C++ zu verstehen:
 
 ## Aufgabenbeschreibung
 
-Implementieren Sie eine generische Klasse `myvector<T>`, angelehnt an
+Implementieren Sie eine generische Klasse `myvector<T>` im Namespace `tfe24`, angelehnt an
 die Standardbibliothek:\
 [cppreference:
 `std::vector`](https://en.cppreference.com/w/cpp/container/vector)
@@ -101,55 +101,9 @@ Akzeptanzkriterien (Auszug):
   - `myvector.hpp` -- Implementierung\
   - `main.cpp` -- einfache Tests / Demo
 
-
-## Performance-Experimente mit `std::chrono`
-
-Führen Sie einfache Messungen durch, um die Wirkung der Wachstumsstrategie sichtbar zu machen. Nutzen Sie dafür die API aus Ihrer Implementierung (z. B. `push_back`, `reserve`, `clear`).
-
-Messaufgaben:
-
-1) Push-Sequenz ohne Vorab-Reserve: Fügen Sie N Elemente nacheinander ein und messen Sie die verstrichene Zeit mit `std::chrono::steady_clock`. Wiederholen Sie den Versuch mehrfach und mitteln Sie die Ergebnisse.
-2) Push-Sequenz mit `reserve(N)`: Wiederholen Sie 1) nach einem einmaligen `reserve(N)` und vergleichen Sie die Zeitwerte.
-3) Wachstumsstrategie-Vergleich: Variieren Sie den Wachstumsfaktor (z. B. ×1.5 vs. ×2) und beobachten Sie den Einfluss auf Zeit und Anzahl Reallocations.
-
-Hinweise:
-
-- Messen Sie in einem „Release“-Build und führen Sie die Messungen mehrmals aus, um Ausreißer zu glätten.
-- Optional: Zählen Sie Reallocations mit (ein interner Zähler in der Demo oder Debug-Ausgaben helfen bei der Sichtbarkeit) und geben Sie am Ende „N Inserts -> R Reallocations“ aus.
-- Dokumentieren Sie Ihre Beobachtungen kurz: Warum ist `reserve` oft deutlich schneller? Wie beeinflusst der Wachstumsfaktor die Anzahl der Umkopiervorgänge?
-
-
 ------------------------------------------------------------------------
 
-## Beispieltests (Skizze)
-
-``` cpp
-#include "myvector.hpp"
-#include <cassert>
-#include <string>
-
-int main() {
-    using tfe24::myvector;
-
-    myvector<int> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
-
-    assert(v.size() == 3);
-    assert(v.at(0) == 1);
-    assert(v[1] == 2);
-
-    v.resize(10);
-    v.clear();
-
-    return 0;
-}
-```
-
-------------------------------------------------------------------------
-
-## Erweiterung: Tests mit Catch2
+## Tests mit Catch2
 
 Testen Sie Ihre Implementierung mit **Catch2**. Catch2 ist bereits ins Projekt integriert (siehe andere Übungen). Passen Sie die Tests unter `exercise-010/tests/001-TestCase.cpp` entsprechend an.
 
@@ -164,6 +118,8 @@ Testen Sie Ihre Implementierung mit **Catch2**. Catch2 ist bereits ins Projekt i
 - Copy-Konstruktor und Copy-Zuweisung erzeugen unabhängige Kopien (Änderung am Original beeinflusst Kopie nicht).
 
 ### Beispiel: Minimaler Catch2-Test
+
+Die Verwendung des Namensraum `tfe24` ist optional siehe Zusatzaufgaben.
 
 ```cpp
 #include <catch2/catch_all.hpp>
@@ -219,6 +175,24 @@ TEST_CASE("copy semantics (Rule of Three)", "[myvector][copy]") {
 - Kurzer TDD-Impuls: Gehen Sie in sehr kleinen Schritten vor: (1) **Red** – schreiben Sie zuerst einen präzisen Test, der aktuell fehlschlägt und eine neue Verhaltensanforderung ausdrückt. (2) **Green** – implementieren Sie nur den minimal nötigen Code, damit alle Tests bestehen. (3) **Refactor** – verbessern Sie Struktur, Lesbarkeit und entfernen Duplikate, ohne dass die Tests rot werden. Halten Sie Ihre Tests aussagekräftig (klarer Arrange/Act/Assert), vermeiden Sie übermäßige Logik in Tests und nutzen Sie sie als lebende Spezifikation für die API Ihres `myvector`.
 
 Viel Erfolg beim Test-getriebenen Entwickeln! 🚀
+
+------------------------------------------------------------------------
+
+## Performance-Experimente mit `std::chrono`
+
+Führen Sie einfache Messungen durch, um die Wirkung der Wachstumsstrategie sichtbar zu machen. Nutzen Sie dafür die API aus Ihrer Implementierung (z. B. `push_back`, `reserve`, `clear`).
+
+Messaufgaben:
+
+1) Push-Sequenz ohne Vorab-Reserve: Fügen Sie N Elemente nacheinander ein und messen Sie die verstrichene Zeit mit `std::chrono::steady_clock`. Wiederholen Sie den Versuch mehrfach und mitteln Sie die Ergebnisse.
+2) Push-Sequenz mit `reserve(N)`: Wiederholen Sie 1) nach einem einmaligen `reserve(N)` und vergleichen Sie die Zeitwerte.
+3) Wachstumsstrategie-Vergleich: Variieren Sie den Wachstumsfaktor (z. B. ×1.5 vs. ×2) und beobachten Sie den Einfluss auf Zeit und Anzahl Reallocations.
+
+Hinweise:
+
+- Messen Sie in einem „Release“-Build und führen Sie die Messungen mehrmals aus, um Ausreißer zu glätten.
+- Optional: Zählen Sie Reallocations mit (ein interner Zähler in der Demo oder Debug-Ausgaben helfen bei der Sichtbarkeit) und geben Sie am Ende „N Inserts -> R Reallocations“ aus.
+- Dokumentieren Sie Ihre Beobachtungen kurz: Warum ist `reserve` oft deutlich schneller? Wie beeinflusst der Wachstumsfaktor die Anzahl der Umkopiervorgänge?
 
 ------------------------------------------------------------------------
 
@@ -321,3 +295,24 @@ Viel Erfolg beim Vertiefen! 🧠
 
 ------------------------------------------------------------------------
 
+## Abgabemodalitäten
+
+Zur Abgabe dieser Übung gehen Sie wie folgt vor:
+
+1. Kurze Zusammenfassung Ihrer Erkenntnisse in Markdown in dieser Datei (`exercise-010/README.md`).
+
+Empfohlene Punkte:
+
+- Wachstumspolitik und amortisierte Kosten
+- Korrektes Umkopieren/Deep-Copy
+- Ergebnisse der `std::chrono`-Messungen (mit kurzer Interpretation)
+- Besondere Randfälle/Fehlerbehandlung
+
+1. Erstellen Sie einen Pull Request auf GitHub von Ihrem Branch (z. B. `solution-010`) gegen den Hauptzweig.
+1. Tragen Sie den Benutzer `graugans` als Reviewer/Approver ein.
+1. Stellen Sie sicher, dass alle Catch2-Tests erfolgreich sind (CI/`ctest`) und die README sauber formatiert ist.
+1. Geben Sie Ihrem PR einen aussagekräftigen Titel (z. B. „exercise-010: tfe24::myvector mit Wachstum & chrono-Messungen“) und eine kurze Beschreibung Ihrer Umsetzung.
+
+Hinweis: PRs werden nach Review und erfolgreichem Testlauf gemerged. Unvollständige PRs bitte als Draft markieren.
+
+------------------------------------------------------------------------
