@@ -18,6 +18,28 @@ git push -u origin solution-010
 ....
 ```
 
+## Abgabemodalitäten
+
+Zur Abgabe dieser Übung gehen Sie wie folgt vor:
+
+1. Kurze Zusammenfassung Ihrer Erkenntnisse in Markdown in dieser Datei (`exercise-010/README.md`).
+
+Empfohlene Punkte:
+
+- Wachstumspolitik und amortisierte Kosten
+- Korrektes Umkopieren/Deep-Copy
+- Ergebnisse der `std::chrono`-Messungen (mit kurzer Interpretation)
+- Besondere Randfälle/Fehlerbehandlung
+
+1. Erstellen Sie einen Pull Request auf GitHub von Ihrem Branch (z. B. `solution-010`) gegen den Hauptzweig.
+1. Tragen Sie den Benutzer `graugans` als Reviewer/Approver ein.
+1. Stellen Sie sicher, dass alle Catch2-Tests erfolgreich sind (CI/`ctest`) und die README sauber formatiert ist.
+1. Geben Sie Ihrem PR einen aussagekräftigen Titel (z. B. „exercise-010: tfe24::myvector mit Wachstum & chrono-Messungen“) und eine kurze Beschreibung Ihrer Umsetzung.
+
+Hinweis: PRs werden nach Review und erfolgreichem Testlauf gemerged. Unvollständige PRs bitte als Draft markieren.
+
+------------------------------------------------------------------------
+
 ## Einfache `myvector`-Implementierung in C++
 
 ### Kontext & Lernziele
@@ -317,27 +339,5 @@ Instrumentieren Sie Reallocation-Ereignisse (Counter). Geben Sie in Tests oder D
 Nutzen Sie diese Zusatzaufgaben, um grundlegende Konzepte Richtung Produktionsreife zu vertiefen. Wählen Sie 2–3 Aspekte und setzen Sie diese sauber um, statt alles nur halb anzureißen.
 
 Viel Erfolg beim Vertiefen! 🧠
-
-------------------------------------------------------------------------
-
-## Abgabemodalitäten
-
-Zur Abgabe dieser Übung gehen Sie wie folgt vor:
-
-1. Kurze Zusammenfassung Ihrer Erkenntnisse in Markdown in dieser Datei (`exercise-010/README.md`).
-
-Empfohlene Punkte:
-
-- Wachstumspolitik und amortisierte Kosten
-- Korrektes Umkopieren/Deep-Copy
-- Ergebnisse der `std::chrono`-Messungen (mit kurzer Interpretation)
-- Besondere Randfälle/Fehlerbehandlung
-
-1. Erstellen Sie einen Pull Request auf GitHub von Ihrem Branch (z. B. `solution-010`) gegen den Hauptzweig.
-1. Tragen Sie den Benutzer `graugans` als Reviewer/Approver ein.
-1. Stellen Sie sicher, dass alle Catch2-Tests erfolgreich sind (CI/`ctest`) und die README sauber formatiert ist.
-1. Geben Sie Ihrem PR einen aussagekräftigen Titel (z. B. „exercise-010: tfe24::myvector mit Wachstum & chrono-Messungen“) und eine kurze Beschreibung Ihrer Umsetzung.
-
-Hinweis: PRs werden nach Review und erfolgreichem Testlauf gemerged. Unvollständige PRs bitte als Draft markieren.
 
 ------------------------------------------------------------------------
