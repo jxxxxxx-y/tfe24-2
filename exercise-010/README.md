@@ -101,6 +101,31 @@ Akzeptanzkriterien (Auszug):
   - `myvector.hpp` -- Implementierung
   - `main.cpp` -- einfache Tests / Demo
 
+### Hinweise zu I/O und Parametrisierung
+
+- Für Textausgabe bitte `fmt::print` bzw. `fmt::println` verwenden (Bibliothek ist bereits eingebunden).
+- Für Kommandozeilenparameter nutzen Sie optional die Bibliothek **CLI11** (ebenfalls vorhanden), z. B. um N, Wachstumsfaktor oder Ausgabeoptionen zu setzen.
+
+Beispiel (skizziert):
+
+```cpp
+#include <CLI/CLI.hpp>
+#include <fmt/core.h>
+
+int main(int argc, char** argv) {
+  int N = 100000;
+  double growth = 2.0;
+
+  CLI::App app{"myvector demo"};
+  app.add_option("-n,--count", N, "Anzahl der Inserts");
+  app.add_option("-g,--growth", growth, "Wachstumsfaktor");
+  CLI11_PARSE(app, argc, argv);
+
+  fmt::println("Running with N={} growth={}", N, growth);
+  // ... Programm-Logik ...
+}
+```
+
 ------------------------------------------------------------------------
 
 ## Tests mit Catch2
