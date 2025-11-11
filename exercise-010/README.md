@@ -27,11 +27,11 @@ zu entwickeln, um die Grundlagen von **dynamischer Speicherverwaltung**
 in C++ zu verstehen:
 
 - Dynamischen Speicher mit `new[]` anfordern und mit `delete[]`
-    freigeben.\
+    freigeben.
 - Speicherwachstum (Capacity, Reallocation) und Besitzverhältnisse
-    nachvollziehen.\
+    nachvollziehen.
 - **Rule of Three** (Destruktor, Copy-Konstruktor, Copy-Zuweisung)
-    sicher anwenden.\
+    sicher anwenden.
 - Grenzenprüfung und einfache Ausnahme-Sicherheit umsetzen.
 
 - Deep-Copy bei Zuweisung/Kopie: eigener Speicherbereich, keine geteilten Zeiger.
@@ -44,7 +44,7 @@ in C++ zu verstehen:
 ## Aufgabenbeschreibung
 
 Implementieren Sie eine generische Klasse `myvector<T>` im Namespace `tfe24`, angelehnt an
-die Standardbibliothek:\
+die Standardbibliothek:
 [cppreference:
 `std::vector`](https://en.cppreference.com/w/cpp/container/vector)
 
@@ -93,12 +93,12 @@ Akzeptanzkriterien (Auszug):
 ## Vorgaben & Einschränkungen
 
 - **Nicht erlaubt:** `std::vector`, `std::unique_ptr<T[]>`,
-    `std::allocator`, `malloc/free`, externe Bibliotheken.\
+    `std::allocator`, `malloc/free`, externe Bibliotheken.
 - **Erlaubt:** `<stdexcept>`, `<algorithm>`, `<utility>`,
-    `<initializer_list>`, `<cstddef>`, `<new>`, `<string>` in Tests.\
-- **Namensraum:** Packen Sie alles in den Namespace `tfe24`.\
+    `<initializer_list>`, `<cstddef>`, `<new>`, `<string>` in Tests.
+- **Namensraum:** Packen Sie alles in den Namespace `tfe24`.
 - **Dateistruktur:**
-  - `myvector.hpp` -- Implementierung\
+  - `myvector.hpp` -- Implementierung
   - `main.cpp` -- einfache Tests / Demo
 
 ------------------------------------------------------------------------
