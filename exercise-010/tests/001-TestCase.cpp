@@ -1,6 +1,13 @@
 // 001-TestCase.cpp
 // And write tests in the same file:
 #include <catch2/catch_test_macros.hpp>
+#include "myvector.hpp"
+
+TEST_CASE("Create a MyVector instance", "[myvector]")
+{
+    MyVector vec;
+}
+
 
 static auto factorial(int number) -> int
 {
