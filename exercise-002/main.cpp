@@ -56,7 +56,20 @@ auto main(int argc, char **argv) -> int
      * it is much more convenient than std::cout and printf
      * More info at https://fmt.dev/latest/api.html
      */
-    fmt::print("Hello, {}!\n", app.get_name());
+   
+
+    // Part 1 - Global Variable 
+
+    fmt::print("Global variable value: {}\n", globalVar);
+    fmt::print("Adress of global variable is: {}\n", fmt::ptr(&globalVar));
+
+    // Part 2 - Local Variable
+
+    int localVar = 2;
+    fmt::print("Local Variable value: {}\n", localVar);
+    fmt::print("Adress of local variable is: {}\n", fmt::ptr(&localVar));
+
+    // Part 3 - Dynamic Variable
 
     
     fmt::println("The value of the variable bss: {} and its address {}", bss, fmt::ptr(&bss));
@@ -110,3 +123,9 @@ auto main(int argc, char **argv) -> int
 
     return 0; /* exit gracefully*/
 }
+
+void foo()
+    {
+        fmt::print("Hello from foo!\n");
+
+    };

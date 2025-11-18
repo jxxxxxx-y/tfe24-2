@@ -7,6 +7,8 @@ message( STATUS "Catch2 Tests included" )
 add_executable( ${PROJECT_NAME}-tests
   000-Main.cpp
   001-TestCase.cpp
+  point.cpp
+  test_point.cpp
 )
 
 # Add libraries
