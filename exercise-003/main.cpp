@@ -5,6 +5,8 @@
 #include "CLI/CLI.hpp"
 #include "config.h"
 
+#include <algorithm> /* needed for the std::sort */
+#include <random>
 
 auto main(int argc, char **argv) -> int
 {
@@ -17,8 +19,7 @@ auto main(int argc, char **argv) -> int
     try
     {
         app.set_version_flag("-V,--version", fmt::format("{} {}", PROJECT_VER, PROJECT_BUILD_DATE));
-
-        app.add_option("-c,--count", counter, "An counter option")->default_val("20");
+        app.add_option("-c,--count", counter, "An counter option")->default_val("3");
         app.parse(argc, argv);
     }
     catch (const CLI::ParseError &e)
@@ -32,60 +33,42 @@ auto main(int argc, char **argv) -> int
      * More info at https://fmt.dev/latest/api.html
      * More info also at https://en.cppreference.com/w/cpp/numeric/random.html
      */
-    
-    // Parameterraum
-    fmt::print("Hello {}\n", app.get_name());
-    fmt::print("counter value = {}\n", counter);
+    fmt::print("Hello, {}!\n", app.get_name());
+    fmt::print("The counter value is: {}!\n", counter);
 
+        // Seed with a real random value, if available
     std::random_device r;
+
+    // Choose a random mean between 1 and 100
+    // https://en.cppreference.com/w/cpp/numeric/random.html
     std::default_random_engine e1(r());
     std::uniform_int_distribution<int> uniform_dist(1, 100);
-    
-    //fmt::print("value for mean = {}\n", mean);
+    int rand_value = uniform_dist(e1);
 
-    std::vector<int> rand_vector;
-    for (int i = 0; i < counter; i++)
-    {
-    int mean = uniform_dist(e1);
-    rand_vector.push_back(mean);
-    }
-
-    fmt::print("values:");
-    fmt::print("[");
-    for (int value : rand_vector){
-        fmt::print(" {}", value);
-    }
-    fmt::print("]");
-
-    std::sort(rand_vector.begin(), rand_vector.end());
-
-    fmt::print("\n");
-    fmt::print("values:");
-    fmt::print("[");
-    for (int value : rand_vector){
-        fmt::print(" {}", value);
-    }
-    fmt::print("]");
-
-    std::vector<int> speed_vec;
+    std::vector<unsigned int> numbers;
     auto start = std::chrono::system_clock::now();
     for (int i = 0; i < counter; i++)
     {
-        speed_vec.push_back(uniform_dist(e1));
+        numbers.push_back(uniform_dist(e1));
     }
-    std::sort(speed_vec.begin(), speed_vec.end());
     auto end = std::chrono::system_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 
-    fmt::print("\n");
-    fmt::print("Time taken for exercise: {}\n", elapsed);
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    fmt::println("The inserting took: {}", elapsed);
+    fmt::println("The random vector: [ {} ]", fmt::join(numbers, ", "));
 
-    fmt::print("values:");
-    fmt::print("[");
-    for (int value : speed_vec){
-        fmt::print(" {}", value);
-    }
-    fmt::print("]");
+    fmt::println("Let's sort the numbers vector");
+    fmt::println("--------------------------------------------------------------------------");
+
+    start = std::chrono::system_clock::now();
+    std::sort(numbers.begin(), numbers.end(), std::less<int>());
+    end = std::chrono::system_clock::now();
+
+    fmt::println("The sorted numbers vector");
+    fmt::println("--------------------------------------------------------------------------");
+    fmt::println("The sorted vector: [ {} ]", fmt::join(numbers, ", "));
+    const auto elapsed_sort = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    fmt::println("The sorting took: {}", elapsed_sort);
 
     return 0; /* exit gracefully*/
 }

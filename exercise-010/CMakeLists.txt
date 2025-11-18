@@ -11,7 +11,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Include dependencies
 find_package(fmt REQUIRED)
-find_package(nlohmann_json REQUIRED)
 find_package(CLI11 CONFIG REQUIRED)
 find_package(Catch2 3 REQUIRED)
 
@@ -19,9 +18,14 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.h.in" "${CMAKE_CURRENT_BINARY
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/include") # add the output path to the include PATH
 
 # add the executable
-add_executable(${PROJECT_NAME} main.cpp myvector.cpp)
+add_executable(${PROJECT_NAME} main.cpp)
 
 # Add libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE
                                         fmt::fmt
                                         CLI11::CLI11)
+
+# Add the tests
+if(BUILD_TESTS)
+  add_subdirectory(tests)
+endif(BUILD_TESTS)

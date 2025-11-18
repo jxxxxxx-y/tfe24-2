@@ -1,5 +1,9 @@
 # Übungsaufgabe: Zeiger in C++ mit `fmt`
 
+## Details
+
+Datum: 30.09.2025
+Link zu [Rapla](https://rapla-ravensburg.dhbw.de/rapla?page=calendar&user=Regulski&file=TFE24-2&day=23&month=9&year=2025&next=%3E%3E)
 
 ## Notwendige git Kommandos
 

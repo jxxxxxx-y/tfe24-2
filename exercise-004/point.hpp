@@ -2,22 +2,15 @@
 #define POINT_HPP
 
 class Point {
-
-    public: 
-    Point();
-    Point (int x, int y);
-    ~Point();
-    void move(int dx, int dy);
-    void print() const;
-
-    double distance(const Point& other) const;
-
+    public:
+        Point();
+        Point(double x, double y);
+        ~Point();
     private:
-    int m_x;
-    int m_y;
+        double m_x;
+        double m_y;
+
 
 };
 
-#endif//POINT_HPP
-
-
+#endif // POINT_HPP
