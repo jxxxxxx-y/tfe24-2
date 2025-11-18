@@ -7,7 +7,7 @@ git status
 git branch -a
 git switch main
 # create a new local branch based on the origin main
-git switch -c solution-011 origin/main
+git switch -c solution-011 upstream/exercise-011
 # perform changes
 # ....
 git add exercise-011
@@ -17,6 +17,361 @@ git push -u origin solution-011
 ....
 ```
 
+---
+
+## JSON in C++ – Grundlagen, Verwendung mit *nlohmann::json*, Raw String Literals & CMake
+
+Bevor wir JSON-getriebene Tests schreiben, müssen wir verstehen, **was JSON überhaupt ist**, wie der Aufbau funktioniert und wie JSON **in C++ verarbeitet** wird. Anschließend wird gezeigt, wie wir JSON-Dateien robust über CMake einbinden, bevor es in die eigentliche Aufgabe mit `myvector` und JSON-getriebenen Catch2-Tests geht.
+
+---
+
+### 1. Was ist JSON?
+
+**JSON (JavaScript Object Notation)** ist ein leichtgewichtiges, textbasiertes Format zur Darstellung strukturierter Daten.
+
+Typische Anwendungsfälle:
+
+- Konfigurationsdateien
+- Testfall-Definitionen
+- Datenaustausch zwischen Programmen (APIs, Microservices, etc.)
+- Speicherung von Objekten, Einstellungen und Metadaten
+
+Vorteile:
+
+- gut lesbar (auch für Menschen)
+- sprachunabhängig
+- sehr weit verbreitet
+- klar und einfach aufgebaut
+
+---
+
+### 2. Grundlegende Konzepte von JSON
+
+JSON besteht im Kern aus zwei Grundstrukturen: **Objekten** und **Arrays**.
+
+#### 2.1 Objekt
+
+Ein Objekt ist eine Sammlung von Schlüssel–Wert-Paaren:
+
+```json
+{
+  "name": "Alice",
+  "age": 25,
+  "active": true
+}
+```
+
+- Schlüssel (Keys) sind **immer Strings**.
+- Werte können verschiedene Typen haben (String, Number, Boolean, Null, Object, Array).
+- Die Reihenfolge der Schlüssel ist normalerweise nicht relevant.
+
+---
+
+#### 2.2 Array
+
+Ein Array ist eine **geordnete Liste** von Werten:
+
+```json
+["rot", "grün", "blau"]
+```
+
+Die Elemente können wieder beliebige JSON-Werte sein (z. B. auch Objekte):
+
+```json
+[
+  { "id": 1, "title": "First" },
+  { "id": 2, "title": "Second" }
+]
+```
+
+---
+
+### 3. JSON-Datentypen
+
+JSON kennt **genau sechs** Datentypen:
+
+| Typ      | Beispiel        |
+|----------|-----------------|
+| String   | `"Hallo"`       |
+| Number   | `42`, `3.14`    |
+| Boolean  | `true`, `false` |
+| Null     | `null`          |
+| Object   | `{ "x": 1 }`    |
+| Array    | `[1, 2, 3]`     |
+
+Es gibt **keine** speziellen Typen für Date, Time, Enum, Char etc. – solche Dinge werden meist als String dargestellt.
+
+---
+
+### 4. JSON erlaubt **keine Kommentare**
+
+Wichtig: JSON ist absichtlich minimalistisch.
+Kommentare sind **nicht** Teil der Spezifikation.
+
+Ungültig:
+
+```json
+{
+  // Kommentar
+  "x": 10
+}
+```
+
+Ebenfalls ungültig:
+
+```json
+{
+  "x": 10 /* Kommentar */
+}
+```
+
+Wenn zusätzliche Erklärungen benötigt werden, nutzt man oft ein eigenes Feld:
+
+```json
+{
+  "_comment": "Config-Datei für Entwicklungsmodus",
+  "x": 10
+}
+```
+
+---
+
+### 5. Gültige und ungültige JSON-Beispiele
+
+✔ **Gültig:**
+
+```json
+{
+  "user": "Chris",
+  "roles": ["editor", "admin"]
+}
+```
+
+❌ **Ungültig – fehlende Anführungszeichen um den Key:**
+
+```json
+{
+  user: "Chris"
+}
+```
+
+❌ **Ungültig – trailing comma:**
+
+```json
+{
+  "x": 10,
+}
+```
+
+---
+
+### 6. JSON in C++ mit *nlohmann::json*
+
+Im Projekt ist die Bibliothek **nlohmann::json** bereits eingebunden.
+Typalias:
+
+```cpp
+#include <nlohmann/json.hpp>
+#include <fmt/core.h>
+
+using json = nlohmann::json;
+```
+
+#### 6.1 JSON-Objekt in C++ erzeugen
+
+```cpp
+json person = {
+    {"name", "Anna"},
+    {"age", 30},
+    {"languages", {"C++", "Python"}},
+    {"active", true}
+};
+```
+
+---
+
+#### 6.2 Werte auslesen
+
+```cpp
+fmt::print("Name: {}
+", person["name"].get<std::string>());
+fmt::print("Age:  {}
+", person["age"].get<int>());
+fmt::print("First language: {}
+", person["languages"][0].get<std::string>());
+```
+
+Mit `contains` kann geprüft werden, ob ein Key existiert:
+
+```cpp
+if (person.contains("age")) {
+    fmt::print("Age is present: {}
+", person["age"].get<int>());
+}
+```
+
+---
+
+#### 6.3 JSON formatiert ausgeben
+
+```cpp
+fmt::print("{}
+", person.dump(4));
+```
+
+`dump(4)` pretty-printet mit 4 Leerzeichen Einrückung.
+
+---
+
+#### 6.4 JSON aus einer Datei einlesen
+
+```cpp
+std::ifstream in("tests/test_vectors.json");
+json doc;
+in >> doc;
+```
+
+Danach kann man wie gewohnt auf `doc["cases"]`, `doc["cases"][0]` usw. zugreifen.
+
+---
+
+### 7. Raw String Literals in C++ (sehr hilfreich für JSON)
+
+Normale String-Literale in C++ brauchen Escape-Sequenzen:
+
+```cpp
+std::string s = "{ "x": 10, "y": 20 }";
+```
+
+Das ist unübersichtlich.
+Stattdessen kann man **Raw String Literals** verwenden:
+
+```cpp
+std::string s = R"({ "x": 10, "y": 20 })";
+```
+
+Vorteile:
+
+- keine Escape-Sequenzen
+- JSON bleibt optisch JSON
+- mehrzeilig möglich
+
+#### 7.1 Mehrzeiliges Beispiel
+
+```cpp
+json cfg = json::parse(R"(
+{
+  "port": 8080,
+  "enabled": true,
+  "mode": "debug"
+}
+)");
+```
+
+#### 7.2 Eigene Delimiter
+
+Falls im Inhalt `)"` vorkommt, kann man einen eigenen Delimiter nutzen:
+
+```cpp
+std::string tricky = R"###(
+Text mit )" im Inhalt
+)###";
+```
+
+---
+
+### 8. Trick 17: Dateipfade in C++ robust handhaben (CMake + `configure_file()`)
+
+Dateipfade in C++ sind fehleranfällig, weil:
+
+- das Working Directory von IDE, Test-Runner, CTest etc. abhängt
+- relative Pfade nur „zufällig“ funktionieren
+- unterschiedliche Systeme unterschiedliche Verzeichnisstrukturen haben
+
+Anstatt Pfade hart zu codieren, lassen wir **CMake** eine Konfigurationsdatei erzeugen und dort Pfade eintragen.
+Damit sind Pfade:
+
+- reproduzierbar
+- unabhängig vom aktuellen Arbeitsverzeichnis
+- portabel zwischen unterschiedlichen Maschinen/Setups
+
+#### 8.1 Vorlage `config.h.in`
+
+Im Quellverzeichnis z. B.:
+
+```cpp
+#pragma once
+
+#define PROJECT_DATA_DIR "@PROJECT_SOURCE_DIR@/tests"
+#define DEFAULT_JSON_TEST_FILE "@PROJECT_SOURCE_DIR@/tests/test_vectors.json"
+```
+
+`@PROJECT_SOURCE_DIR@` wird von CMake ersetzt.
+
+---
+
+#### 8.2 CMake: `configure_file()` verwenden
+
+In der `CMakeLists.txt`:
+
+```cmake
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/config.h
+    @ONLY
+)
+```
+
+CMake erzeugt dann im Build-Verzeichnis z. B.:
+
+```cpp
+#define PROJECT_DATA_DIR "/home/student/exercise-011/tests"
+#define DEFAULT_JSON_TEST_FILE "/home/student/exercise-011/tests/test_vectors.json"
+```
+
+---
+
+#### 8.3 Verwendung im C++-Code
+
+```cpp
+#include "config.h"
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <fmt/core.h>
+
+using json = nlohmann::json;
+
+int main() {
+    std::ifstream in(DEFAULT_JSON_TEST_FILE);
+    if (!in.is_open()) {
+        fmt::print("Fehler: konnte JSON-Datei nicht öffnen: {}
+", DEFAULT_JSON_TEST_FILE);
+        return 1;
+    }
+
+    json doc;
+    in >> doc;
+
+    fmt::print("JSON geladen, cases = {}
+", doc["cases"].size());
+}
+```
+
+Damit ist der Pfad zur JSON-Testdatei **fest verdrahtet**, aber nicht im Code, sondern in der von CMake generierten Datei – und passt sich automatisch dem Projektpfad an.
+
+---
+
+### 9. Übergang zur Aufgabe
+
+Mit diesem Wissen können wir nun:
+
+- JSON-Dateien als **Testfall-Beschreibung** verwenden.
+- Diese JSON-Daten in C++ mit *nlohmann::json* einlesen.
+- Aus den JSON-Daten dynamisch **Catch2-Testfälle** erzeugen.
+- Dateipfade zur JSON-Datei über CMake zuverlässig bereitstellen.
+
+Im folgenden Abschnitt geht es genau darum:
+Eine eigene `myvector<T>`-Implementierung, deren Verhalten über JSON-getriebene Tests geprüft wird.
 
 ---
 
@@ -29,10 +384,10 @@ zu entwickeln, um die Grundlagen von **dynamischer Speicherverwaltung**
 in C++ zu verstehen **und** diese über **JSON‑getriebene Tests mit Catch2**
 automatisiert zu verifizieren:
 
-- Dynamischen Speicher mit `new[]` anfordern und mit `delete[]` freigeben.  
-- Speicherwachstum (Capacity, Reallocation) und Besitzverhältnisse nachvollziehen.  
-- **Rule of Three** (Destruktor, Copy‑Konstruktor, Copy‑Zuweisung) sicher anwenden.  
-- Grenzenprüfung und einfache Ausnahme‑Sicherheit umsetzen.  
+- Dynamischen Speicher mit `new[]` anfordern und mit `delete[]` freigeben.
+- Speicherwachstum (Capacity, Reallocation) und Besitzverhältnisse nachvollziehen.
+- **Rule of Three** (Destruktor, Copy‑Konstruktor, Copy‑Zuweisung) sicher anwenden.
+- Grenzenprüfung und einfache Ausnahme‑Sicherheit umsetzen.
 - JSON‑basierte Testvektoren mit *nlohmann::json* einlesen und in **Catch2** als dynamische Testfälle ausführen.
 
 > **Hinweis:** Das JSON‑Parsing und Catch2 sind bereits im Projekt eingebunden.
@@ -41,7 +396,7 @@ automatisiert zu verifizieren:
 
 ## Aufgabenbeschreibung
 
-Implementieren Sie eine generische Klasse `myvector<T>` im Namespace `mystd`, angelehnt an die Standardbibliothek:  
+Implementieren Sie eine generische Klasse `myvector<T>` im Namespace `mystd`, angelehnt an die Standardbibliothek:
 [cppreference: `std::vector`](https://en.cppreference.com/w/cpp/container/vector)
 
 ### Minimal geforderte öffentliche Schnittstelle
@@ -68,20 +423,20 @@ Implementieren Sie eine generische Klasse `myvector<T>` im Namespace `mystd`, an
 
 ## Vorgaben & Einschränkungen
 
-- **Nicht erlaubt:** `std::vector`, `std::unique_ptr<T[]>`, `std::allocator`, `malloc/free`, externe Bibliotheken.  
-- **Erlaubt:** `<stdexcept>`, `<algorithm>`, `<utility>`, `<initializer_list>`, `<cstddef>`, `<new>`, `<string>`.  
-- **Namensraum:** `namespace mystd`.  
+- **Nicht erlaubt:** `std::vector`, `std::unique_ptr<T[]>`, `std::allocator`, `malloc/free`, externe Bibliotheken.
+- **Erlaubt:** `<stdexcept>`, `<algorithm>`, `<utility>`, `<initializer_list>`, `<cstddef>`, `<new>`, `<string>`.
+- **Namensraum:** `namespace mystd`.
 - **Dateistruktur (Vorschlag):**
-  - `include/myvector.hpp` — Implementierung  
-  - `tests/test_myvector_json.cpp` — JSON‑getriebene Catch2‑Tests  
+  - `include/myvector.hpp` — Implementierung
+  - `tests/test_myvector_json.cpp` — JSON‑getriebene Catch2‑Tests
   - `tests/test_vectors.json` — Testvektoren
 
 ---
 
 ## JSON‑getriebene Tests (Pflichtteil)
 
-Schreiben Sie **einen** Catch2‑Test, der **alle** Testfälle aus einer JSON‑Datei lädt und dynamisch ausführt.  
-Pfad der Datei: `tests/test_vectors.json` (kann in CMake/CTest als Arbeitsverzeichnis konfiguriert werden).
+Schreiben Sie **einen** Catch2‑Test, der **alle** Testfälle aus einer JSON‑Datei lädt und dynamisch ausführt.
+Pfad der Datei: `tests/test_vectors.json` (kann in CMake/CTest als Arbeitsverzeichnis konfiguriert werden – oder über `config.h` wie oben beschrieben).
 
 ### Eingabe‑JSON: Schemastruktur
 
@@ -114,23 +469,23 @@ Pfad der Datei: `tests/test_vectors.json` (kann in CMake/CTest als Arbeitsverzei
 }
 ```
 
-**Regeln & Bewertungshinweise:**  
-- `initial_capacity` → via `reserve()` anwenden.  
-- `initial_values` füllt den Vektor; falls vorhanden, **ignoriert** `initial_size`.  
-- `operations` werden sequenziell ausgeführt.  
-- Bei `at`‑Zugriffen sollen gelesene Werte in eine Ergebnisliste `reads` protokolliert werden.  
-- Fehler/Exceptions (z. B. Out‑of‑Range) **beenden** den Testfall nicht, sondern werden als Einträge in `errors` gesammelt.  
+**Regeln & Bewertungshinweise:**
+- `initial_capacity` → via `reserve()` anwenden.
+- `initial_values` füllt den Vektor; falls vorhanden, **ignoriert** `initial_size`.
+- `operations` werden sequenziell ausgeführt.
+- Bei `at`‑Zugriffen sollen gelesene Werte in eine Ergebnisliste `reads` protokolliert werden.
+- Fehler/Exceptions (z. B. Out‑of‑Range) **beenden** den Testfall nicht, sondern werden als Einträge in `errors` gesammelt.
 - In den Erwartungen gilt:
-  - **Pflicht:** `final_size` muss exakt stimmen.  
-  - **Kapazität:** Prüfen Sie **entweder** `min_capacity` (≥) **oder** verzichten Sie auf eine Kapazitätsprüfung, um Wachstumsstrategien nicht zu erzwingen.  
-  - **`reads`/`errors`:** vergleichen Sie **in Reihenfolge** der Ausführung.  
+  - **Pflicht:** `final_size` muss exakt stimmen.
+  - **Kapazität:** Prüfen Sie **entweder** `min_capacity` (≥) **oder** verzichten Sie auf eine Kapazitätsprüfung, um Wachstumsstrategien nicht zu erzwingen.
+  - **`reads`/`errors`:** vergleichen Sie **in Reihenfolge** der Ausführung.
   - **`final_values`:** falls angegeben, prüfen Sie Inhalte über `operator[]`.
 
 ---
 
 ## Beispiel‑Testvektoren `tests/test_vectors.json`
 
-> Dies ist ein **Beispiel**. Sie dürfen/solllen weitere Fälle ergänzen (Out‑of‑Range, mehrfaches Reallocate, leerer Vektor, nur `reserve`, …).
+> Dies ist ein **Beispiel**. Sie dürfen/sollen weitere Fälle ergänzen (Out‑of‑Range, mehrfaches Reallocate, leerer Vektor, nur `reserve`, …).
 
 ```json
 {
@@ -187,14 +542,19 @@ Pfad der Datei: `tests/test_vectors.json` (kann in CMake/CTest als Arbeitsverzei
 #include <catch2/catch_all.hpp>
 #include "myvector.hpp"
 #include "nlohmann/json.hpp"
+#include "config.h" // falls DEFAULT_JSON_TEST_FILE verwendet wird
 #include <fstream>
 #include <string>
 
 using json = nlohmann::json;
 
 TEST_CASE("JSON-driven test cases for mystd::myvector<int>", "[json][myvector]") {
-    // Pfad ggf. in CTest via WORKING_DIRECTORY setzen
-    std::ifstream in("tests/test_vectors.json");
+    // Variante A: fester Pfad über config.h
+    std::ifstream in(DEFAULT_JSON_TEST_FILE);
+
+    // Variante B (alternativ): relativer Pfad, falls WORKING_DIRECTORY in CTest gesetzt ist
+    // std::ifstream in("tests/test_vectors.json");
+
     REQUIRE(in && "tests/test_vectors.json not found");
     json doc;
     in >> doc;
@@ -312,4 +672,4 @@ add_test(NAME myvector_json_tests COMMAND test_myvector_json WORKING_DIRECTORY $
   ctest --test-dir build --output-on-failure
   ```
 
-Viel Erfolg beim Test‑getriebenen „Selbst‑Vectorn“! 🚀
+Viel Erfolg beim test‑getriebenen „Selbst‑Vectorn“! 🚀
