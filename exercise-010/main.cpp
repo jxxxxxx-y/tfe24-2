@@ -5,6 +5,8 @@
 #include "config.h"
 #include "myvector.hpp"
 
+
+
 auto main(int argc, char **argv) -> int
 {
     /**
@@ -29,13 +31,30 @@ auto main(int argc, char **argv) -> int
      */
     fmt::print("Hello, {}!\n", app.get_name());
 
-    
-    {
-        MyVector vec;
+    myvector<int> vec(2);
+    vec.status();
+    vec.push_back(10);
+    vec.status();
+    for (int i = 0; i < 5; i++){
+        vec.push_back(i);
     }
+    vec.push_back(1);
+    vec.status();
+    vec.push_back(2);
+    vec.status();
+    vec.push_back(3);
+    vec.status();
+    vec.push_back(4);
+    vec.status();
+    vec.value_at(4);
+    vec.push_back(5);
+    vec.status();
+    vec.resize(25);
+    vec.status();
+    vec.capacity();
+    vec.size();
+    vec.clear();
+    vec.value_at(4);
 
-    MyVector vec2(27);
-    fmt::println("Hello exercise number 3 after Vector");
-
-    return 0; /* exit gracefully*/
+    return 0;
 }

@@ -1,43 +1,43 @@
-// 001-TestCase.cpp
-// And write tests in the same file:
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_all.hpp>
 #include "myvector.hpp"
 
-TEST_CASE("Create a MyVector instance", "[myvector]")
-{
-    MyVector vec;
+TEST_CASE("basic operations on tfe24::myvector<int>", "[myvector][basic]") {
+  myvector<int> v;
+  REQUIRE(v.size() == 0);
+
+  SECTION("push_back grows size") {
+    v.push_back(42);
+    v.push_back(7);
+    REQUIRE(v.size() == 2);
+    REQUIRE(v.m_arr[0] == 42);
+    REQUIRE(v.value_at(1) == 7);
+  }
+
+  SECTION("resize larger fills with default values") {
+    v.resize(5);
+    REQUIRE(v.size() == 5);
+    for (size_t i = 0; i < v.size(); ++i) {
+      REQUIRE(v.m_arr[i] == int{}); // erwartet 0 für int
+    }
+  }
+
+  SECTION("at throws on out of range") {
+    v.push_back(1);
+    REQUIRE_THROWS_AS(v.value_at(5), std::out_of_range);
+  }
 }
 
+TEST_CASE("copy semantics (Rule of Three)", "[myvector][copy]") {
+  myvector<int> a;
+  for (int i = 0; i < 3; ++i) a.push_back(i + 10);
+  myvector<int> b = a;          // Copy-Konstruktor
+  //tfe24::myvector<int> c; c = a;       // Copy-Zuweisung
 
-static auto factorial(int number) -> int
-{
-    // return number <= 1 ? number : Factorial( number - 1 ) * number;  // fail
-    return number <= 1 ? 1 : factorial(number - 1) * number;  // pass
+  REQUIRE(b.size() == a.size());
+  //REQUIRE(c.size() == a.size());
+
+  a.m_arr[0] = 99; // Änderungen dürfen Kopien nicht beeinflussen
+  REQUIRE(b.m_arr[0] != a.m_arr[0]);
+  //REQUIRE(c[0] != a[0]);
 }
-
-TEST_CASE("Factorial of 0 is 1 (fail)", "[single-file]")
-{
-    REQUIRE(factorial(0) == 0);
-}
-
-TEST_CASE("Factorials of 1 and higher are computed (pass)", "[single-file]")
-{
-    REQUIRE(factorial(1) == 1);
-    REQUIRE(factorial(2) == 2);
-    REQUIRE(factorial(3) == 6);
-    REQUIRE(factorial(10) == 3628800);
-}
-
-// Compile & run:
-// - g++ -std=c++11 -Wall -I$(CATCH_SINGLE_INCLUDE) -o 010-TestCase 010-TestCase.cpp && 010-TestCase --success
-// - cl -EHsc -I%CATCH_SINGLE_INCLUDE% 010-TestCase.cpp && 010-TestCase --success
-
-// Expected compact output (all assertions):
-//
-// prompt> 010-TestCase --reporter compact --success
-// 010-TestCase.cpp:14: failed: Factorial(0) == 1 for: 0 == 1
-// 010-TestCase.cpp:18: passed: Factorial(1) == 1 for: 1 == 1
-// 010-TestCase.cpp:19: passed: Factorial(2) == 2 for: 2 == 2
-// 010-TestCase.cpp:20: passed: Factorial(3) == 6 for: 6 == 6
-// 010-TestCase.cpp:21: passed: Factorial(10) == 3628800 for: 3628800 (0x375f00) == 3628800 (0x375f00)
-// Failed 1 test case, failed 1 assertion.
