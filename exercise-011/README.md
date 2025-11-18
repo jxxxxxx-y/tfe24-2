@@ -280,84 +280,68 @@ Text mit )" im Inhalt
 
 ---
 
-### 8. Trick 17: Dateipfade in C++ robust handhaben (CMake + `configure_file()`)
+### 8. **Trick 17: Dateipfade robust handhaben mit CMake + `configure_file()` + `constexpr auto`**
 
-Dateipfade in C++ sind fehleranfällig, weil:
+Dateipfade sind immer fehleranfällig, weil Working Directories variieren.
+Die robusteste Lösung (wie im Beispielprojekt `version_info`) ist:
 
-- das Working Directory von IDE, Test-Runner, CTest etc. abhängt
-- relative Pfade nur „zufällig“ funktionieren
-- unterschiedliche Systeme unterschiedliche Verzeichnisstrukturen haben
-
-Anstatt Pfade hart zu codieren, lassen wir **CMake** eine Konfigurationsdatei erzeugen und dort Pfade eintragen.
-Damit sind Pfade:
-
-- reproduzierbar
-- unabhängig vom aktuellen Arbeitsverzeichnis
-- portabel zwischen unterschiedlichen Maschinen/Setups
-
-#### 8.1 Vorlage `config.h.in`
-
-Im Quellverzeichnis z. B.:
+### 8.1 `config.h.in` erstellen
 
 ```cpp
 #pragma once
 
-#define PROJECT_DATA_DIR "@PROJECT_SOURCE_DIR@/tests"
-#define DEFAULT_JSON_TEST_FILE "@PROJECT_SOURCE_DIR@/tests/test_vectors.json"
+namespace config {
+    constexpr auto data_dir = "@CMAKE_CURRENT_SOURCE_DIR@/tests";
+    constexpr auto json_tests = "@CMAKE_CURRENT_SOURCE_DIR@/tests/test_vectors.json";
+}
 ```
 
-`@PROJECT_SOURCE_DIR@` wird von CMake ersetzt.
-
----
-
-#### 8.2 CMake: `configure_file()` verwenden
-
-In der `CMakeLists.txt`:
+### 8.2 `CMakeLists.txt`
 
 ```cmake
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
-    ${CMAKE_CURRENT_BINARY_DIR}/config.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in
+    ${CMAKE_CURRENT_BINARY_DIR}/config.hpp
     @ONLY
 )
 ```
 
-CMake erzeugt dann im Build-Verzeichnis z. B.:
-
-```cpp
-#define PROJECT_DATA_DIR "/home/student/exercise-011/tests"
-#define DEFAULT_JSON_TEST_FILE "/home/student/exercise-011/tests/test_vectors.json"
-```
-
----
-
-#### 8.3 Verwendung im C++-Code
+### 8.3 Nutzung im Code
 
 ```cpp
 #include "config.h"
+
 #include <fstream>
+#include <string>
+#include <iterator>
+#include <filesystem>
 #include <nlohmann/json.hpp>
-#include <fmt/core.h>
 
 using json = nlohmann::json;
 
-int main() {
-    std::ifstream in(DEFAULT_JSON_TEST_FILE);
-    if (!in.is_open()) {
-        fmt::print("Fehler: konnte JSON-Datei nicht öffnen: {}
-", DEFAULT_JSON_TEST_FILE);
-        return 1;
-    }
+namespace fs = std::filesystem;
 
-    json doc;
-    in >> doc;
+const auto path = fs::path{json_config::json_test_file};
 
-    fmt::print("JSON geladen, cases = {}
-", doc["cases"].size());
+std::ifstream in(path);
+if (!in.is_open()) {
+    fmt::print("Fehler: konnte JSON-Datei nicht öffnen: {}\n", path.string());
+    return;
 }
+
+// gesamte Datei in einen String laden
+std::string text(std::istreambuf_iterator<char>{in},
+                 std::istreambuf_iterator<char>{});
+
+// JSON parsen
+json doc = json::parse(text);
 ```
 
-Damit ist der Pfad zur JSON-Testdatei **fest verdrahtet**, aber nicht im Code, sondern in der von CMake generierten Datei – und passt sich automatisch dem Projektpfad an.
+Damit sind Pfade:
+
+- reproduzierbar
+- unabhängig vom Working Directory
+- portable und build-system-gesteuert
 
 ---
 
@@ -470,6 +454,7 @@ Pfad der Datei: `tests/test_vectors.json` (kann in CMake/CTest als Arbeitsverzei
 ```
 
 **Regeln & Bewertungshinweise:**
+
 - `initial_capacity` → via `reserve()` anwenden.
 - `initial_values` füllt den Vektor; falls vorhanden, **ignoriert** `initial_size`.
 - `operations` werden sequenziell ausgeführt.
@@ -666,6 +651,7 @@ add_test(NAME myvector_json_tests COMMAND test_myvector_json WORKING_DIRECTORY $
 - `tests/test_myvector_json.cpp`
 - `tests/test_vectors.json` (mit mindestens 5 sinnvollen Fällen inkl. Fehlerfall)
 - Kurze `README.md` mit Build‑ und Test‑Anleitung:
+
   ```sh
   cmake -S . -B build
   cmake --build build -j
