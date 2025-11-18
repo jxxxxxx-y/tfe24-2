@@ -3,18 +3,26 @@
 ## Notwendige git Kommandos
 
 ```sh
+git fetch --all
 git status
 git branch -a
 git switch main
-# create a new local branch based on the origin main
+# create a new local branch based on the upstream main
+git switch -c exercise-011 upstream/exercise-011
+# prepare the target branch for the pull request
+git push origin exercise-011:exercise-011
+# create a solution branch locally
 git switch -c solution-011 upstream/exercise-011
-# perform changes
-# ....
+
+# make changes
 git add exercise-011
-git commit -m "feat: add exercise number two"
+git commit -m "feat: add exercise number ten"
+
 # push the changes to the cloud
 git push -u origin solution-011
-....
+
+# Show the git graph
+git log --graph --oneline --decorate --all
 ```
 
 ---
@@ -645,17 +653,17 @@ add_test(NAME myvector_json_tests COMMAND test_myvector_json WORKING_DIRECTORY $
 
 ---
 
-## Abgabe
+## Abgabemodalitäten
 
-- `include/myvector.hpp`
-- `tests/test_myvector_json.cpp`
-- `tests/test_vectors.json` (mit mindestens 5 sinnvollen Fällen inkl. Fehlerfall)
-- Kurze `README.md` mit Build‑ und Test‑Anleitung:
+Zur Abgabe dieser Übung gehen Sie wie folgt vor:
 
-  ```sh
-  cmake -S . -B build
-  cmake --build build -j
-  ctest --test-dir build --output-on-failure
-  ```
+> Kurze Zusammenfassung Ihrer Erkenntnisse in Markdown in dieser Datei (exercise-011/README.md).
+
+Erstellen Sie einen Pull Request auf GitHub von Ihrem Branch (z. B. solution-011) gegen den Zweig `excercise-011`.
+Tragen Sie den Benutzer `graugans` als Reviewer/Approver ein.
+Stellen Sie sicher, dass alle Catch2-Tests erfolgreich sind (ctest) und die README sauber formatiert ist.
+Geben Sie Ihrem PR einen aussagekräftigen Titel (z. B. „exercise-011: tfe24::myvector mit JSON Test input“) und eine kurze Beschreibung Ihrer Umsetzung.
+
+Hinweis: PRs werden nach Review und erfolgreichem Testlauf gemerged. Unvollständige PRs bitte als Draft markieren.
 
 Viel Erfolg beim test‑getriebenen „Selbst‑Vectorn“! 🚀
