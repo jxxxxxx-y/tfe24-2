@@ -1,4 +1,4 @@
-# Aufgabenstellung (erweitert): `myvector` + JSON‑getriebene Tests mit Catch2 & *nlohmann::json*
+# Aufgabenstellung  `std::vector` JSON‑getriebene Tests mit Catch2 & *nlohmann::json*
 
 ## Notwendige git Kommandos
 
@@ -29,7 +29,7 @@ git log --graph --oneline --decorate --all
 
 ## JSON in C++ – Grundlagen, Verwendung mit *nlohmann::json*, Raw String Literals & CMake
 
-Bevor wir JSON-getriebene Tests schreiben, müssen wir verstehen, **was JSON überhaupt ist**, wie der Aufbau funktioniert und wie JSON **in C++ verarbeitet** wird. Anschließend wird gezeigt, wie wir JSON-Dateien robust über CMake einbinden, bevor es in die eigentliche Aufgabe mit `myvector` und JSON-getriebenen Catch2-Tests geht.
+Bevor wir JSON-getriebene Tests schreiben, müssen wir verstehen, **was JSON überhaupt ist**, wie der Aufbau funktioniert und wie JSON **in C++ verarbeitet** wird. Anschließend wird gezeigt, wie wir JSON-Dateien robust über CMake einbinden, bevor es in die eigentliche Aufgabe mit `std::vector` und JSON-getriebenen Catch2-Tests geht.
 
 ---
 
@@ -658,7 +658,7 @@ Zur Abgabe dieser Übung gehen Sie wie folgt vor:
 Erstellen Sie einen Pull Request auf GitHub von Ihrem Branch (z. B. solution-011) gegen den Zweig `excercise-011`.
 Tragen Sie den Benutzer `graugans` als Reviewer/Approver ein.
 Stellen Sie sicher, dass alle Catch2-Tests erfolgreich sind (ctest) und die README sauber formatiert ist.
-Geben Sie Ihrem PR einen aussagekräftigen Titel (z. B. „exercise-011: tfe24::myvector mit JSON Test input“) und eine kurze Beschreibung Ihrer Umsetzung.
+Geben Sie Ihrem PR einen aussagekräftigen Titel (z. B. „exercise-011: tfe24::vector mit JSON Test input“) und eine kurze Beschreibung Ihrer Umsetzung.
 
 Hinweis: PRs werden nach Review und erfolgreichem Testlauf gemerged. Unvollständige PRs bitte als Draft markieren.
 
